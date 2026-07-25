@@ -3,6 +3,7 @@ import React, { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { currency } from '../data/siteConfig'
+import { MENU_PLACEHOLDER_IMAGE } from '../data/menuItems'
 import { useCart } from '../context/CartContext'
 import { useMenu } from '../context/MenuContext'
 import VariantSelector from '../components/VariantSelector'
@@ -72,8 +73,8 @@ export default function OriginalVariantPage() {
           ×
         </button>
         <div className="variant-hero-image">
-          {item.image ? (
-            <img src={item.image} alt={item.name} />
+          {(item.image || MENU_PLACEHOLDER_IMAGE) ? (
+            <img src={item.image || MENU_PLACEHOLDER_IMAGE} alt={item.name} />
           ) : (
             <span aria-hidden="true">{item.emoji}</span>
           )}

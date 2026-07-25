@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { currency } from '../data/siteConfig'
+import { MENU_PLACEHOLDER_IMAGE } from '../data/menuItems'
 import { useMenu } from '../context/MenuContext'
 import { useAdminAuth } from '../context/AdminAuthContext'
 import { deleteMenuItem as deleteMenuItemRequest } from '../lib/menuApi'
@@ -82,8 +83,8 @@ export default function AdminDashboardPage() {
               transition={{ duration: 0.32, delay: index * 0.03 }}
             >
               <div className="menu-card-v2-image">
-                {item.image ? (
-                  <img src={item.image} alt={item.name} />
+                {(item.image || MENU_PLACEHOLDER_IMAGE) ? (
+                  <img src={item.image || MENU_PLACEHOLDER_IMAGE} alt={item.name} />
                 ) : (
                   <span className="menu-card-v2-emoji" aria-hidden="true">{item.emoji}</span>
                 )}

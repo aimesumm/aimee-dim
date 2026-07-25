@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { useMenu } from '../context/MenuContext'
 import { useAdminAuth } from '../context/AdminAuthContext'
 import { createMenuItem, updateMenuItem, fileToBase64 } from '../lib/menuApi'
+import { MENU_PLACEHOLDER_IMAGE } from '../data/menuItems'
 
 function emptyVariant() {
   return { label: '', price: '' }
@@ -27,7 +28,7 @@ export default function AdminMenuFormPage() {
   const [category, setCategory] = useState('Makanan')
   const [badge, setBadge] = useState('')
   const [description, setDescription] = useState('')
-  const [imagePreview, setImagePreview] = useState('')
+  const [imagePreview, setImagePreview] = useState(MENU_PLACEHOLDER_IMAGE)
   const [imageBase64, setImageBase64] = useState('')
   const [useVariant, setUseVariant] = useState(false)
   const [variants, setVariants] = useState([emptyVariant()])
@@ -47,14 +48,25 @@ export default function AdminMenuFormPage() {
       setCategory(existingItem.category === 'Minuman' ? 'Minuman' : 'Makanan')
       setBadge(existingItem.badge || '')
       setDescription(existingItem.desc || '')
-      setImagePreview(existingItem.image || '')
+      setImagePreview(existingItem.image || MENU_PLACEHOLDER_IMAGE)
       setUseVariant(Boolean(existingItem.hasVariantPage))
       setVariants(
         existingItem.variantOptions?.length
           ? existingItem.variantOptions.map((option) => ({ label: option.label, price: String(option.price) }))
           : [emptyVariant()],
       )
+      return
     }
+
+    setName('')
+    setPrice('')
+    setCategory('Makanan')
+    setBadge('')
+    setDescription('')
+    setImagePreview(MENU_PLACEHOLDER_IMAGE)
+    setImageBase64('')
+    setUseVariant(false)
+    setVariants([emptyVariant()])
   }, [existingItem])
 
   if (!isAdmin) return null
@@ -120,8 +132,12 @@ export default function AdminMenuFormPage() {
             .filter((variant) => variant.label.trim())
             .map((variant) => ({ label: variant.label.trim(), price: Number(variant.price) || 0 }))
         : [],
-      ...(imageBase64 ? { imageBase64 } : {}),
-      ...(!imageBase64 && existingItem?.image ? { imageUrl: existingItem.image } : {}),
+    }
+
+    if (imageBase64) {
+      payload.imageBase64 = imageBase64
+    } else {
+      payload.imageUrl = existingItem?.image || MENU_PLACEHOLDER_IMAGE
     }
 
     try {

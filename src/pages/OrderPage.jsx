@@ -8,6 +8,7 @@ import { useCart } from '../context/CartContext'
 import { useOrderDraft } from '../context/OrderDraftContext'
 import { createOrder, createQris } from '../services/paymentGateway'
 import { currency, formatItemVariant, getOrderItemsCount, getSubtotal } from '../data/siteConfig'
+import { MENU_PLACEHOLDER_IMAGE } from '../data/menuItems'
 import { normalizeOrder, writeLastOrder } from '../lib/orderHelpers'
 
 function readSelectedMethod(locationState, preferredMethod) {
@@ -157,7 +158,7 @@ export default function OrderPage() {
                     whileHover={{ y: -2 }}
                   >
                     <div className="order-item-thumb" aria-hidden="true">
-                      {item.image ? <img src={item.image} alt="" /> : (item.emoji || '🥟')}
+                      {item.image || MENU_PLACEHOLDER_IMAGE ? <img src={item.image || MENU_PLACEHOLDER_IMAGE} alt="" /> : (item.emoji || '🥟')}
                     </div>
                     <div className="order-item-copy">
                       <strong>{item.name}</strong>
