@@ -11,7 +11,7 @@ import AddMenuCard from './AddMenuCard'
 export default function MenuSection() {
   const [activeCategory, setActiveCategory] = useState('Semua')
   const { addItem } = useCart()
-  const { items } = useMenu()
+  const { items, loading } = useMenu()
   const { isAdmin } = useAdminAuth()
   const navigate = useNavigate()
 
@@ -70,6 +70,10 @@ export default function MenuSection() {
           <AddMenuCard index={filtered.length} onClick={() => navigate('/admin/menu/new')} />
         ) : null}
       </div>
+
+      {!loading && !filtered.length && !isAdmin ? (
+        <p className="section-copy">Menu belum tersedia saat ini. Silakan cek kembali sebentar lagi.</p>
+      ) : null}
     </section>
   )
 }
