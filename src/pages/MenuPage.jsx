@@ -1,4 +1,3 @@
-
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useCart } from '../context/CartContext'
@@ -33,7 +32,9 @@ export default function MenuPage() {
 
   return (
     <div className="app-shell">
-      <Header onGoMenu={() => document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
+      <Header
+        onGoMenu={() => document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+      />
 
       <main className="container home-stack">
         <motion.div custom={0} variants={sectionVariants} initial="hidden" animate="show">
