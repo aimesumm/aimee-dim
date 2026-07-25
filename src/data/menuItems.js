@@ -4,6 +4,8 @@
 // dulu; daftar ini hanya fallback supaya halaman tidak pernah kosong/error.
 // Hanya menu dengan `hasVariantPage: true` yang membuka halaman pilih varian
 // saat tombol Add ditekan. Menu lain langsung masuk ke keranjang.
+
+export const MENU_PLACEHOLDER_IMAGE = '/placeholder.png'
 export const fallbackMenuItems = [
   {
     id: 'd1',
@@ -13,6 +15,7 @@ export const fallbackMenuItems = [
     desc: 'Dimsum ayam original dengan tekstur lembut.',
     badge: 'Best Seller',
     emoji: '🥟',
+    image: MENU_PLACEHOLDER_IMAGE,
     hasVariantPage: true,
     variantOptions: [
       { key: 'naori', label: 'Naori', price: 1000 },
@@ -29,6 +32,7 @@ export const fallbackMenuItems = [
     desc: 'Pedas ringan dengan rasa mantap.',
     badge: 'Spicy',
     emoji: '🌶️',
+    image: MENU_PLACEHOLDER_IMAGE,
   },
   {
     id: 'd3',
@@ -38,6 +42,7 @@ export const fallbackMenuItems = [
     desc: 'Creamy dan lumer.',
     badge: 'Cheese',
     emoji: '🧀',
+    image: MENU_PLACEHOLDER_IMAGE,
   },
   {
     id: 'd4',
@@ -47,6 +52,7 @@ export const fallbackMenuItems = [
     desc: 'Udang fresh dan lembut.',
     badge: 'Premium',
     emoji: '🦐',
+    image: MENU_PLACEHOLDER_IMAGE,
   },
   {
     id: 'm1',
@@ -56,6 +62,7 @@ export const fallbackMenuItems = [
     desc: 'Segar dan ringan.',
     badge: 'Fresh',
     emoji: '🍋‍🟩',
+    image: MENU_PLACEHOLDER_IMAGE,
   },
   {
     id: 'm2',
@@ -65,5 +72,6 @@ export const fallbackMenuItems = [
     desc: 'Manis-asam seimbang.',
     badge: 'Popular',
     emoji: '🍓',
+    image: MENU_PLACEHOLDER_IMAGE,
   },
 ]
