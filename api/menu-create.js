@@ -21,9 +21,12 @@ export default async function handler(req, res) {
     }
 
     let imageUrl = body.imageUrl || null
+    let imagePath = null
 
     if (body.imageBase64) {
-      imageUrl = await uploadMenuImage(body.imageBase64, body.name)
+      const uploaded = await uploadMenuImage(body.imageBase64, body.name, body.category)
+      imageUrl = uploaded?.url || imageUrl
+      imagePath = uploaded?.path || null
     }
 
     const created = await createMenuItem({
@@ -31,6 +34,7 @@ export default async function handler(req, res) {
       category: body.category,
       price: body.price,
       imageUrl,
+      imagePath,
       badge: body.badge,
       description: body.description,
       hasVariant: body.hasVariant,

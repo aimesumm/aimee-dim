@@ -25,23 +25,29 @@ export default async function handler(req, res) {
       return res.status(400).json({ message: 'Harga menu harus lebih dari 0' })
     }
 
-    let imageUrl = body.imageUrl || null
-
-    if (body.imageBase64) {
-      imageUrl = await uploadMenuImage(body.imageBase64, body.name)
-    }
-
-    const updated = await updateMenuItem(id, {
+    const patch = {
       name: body.name,
       category: body.category,
       price: body.price,
-      imageUrl,
       badge: body.badge,
       description: body.description,
       hasVariant: body.hasVariant,
       variants: body.variants,
       sortOrder: body.sortOrder,
-    })
+    }
+
+    if (body.imageBase64) {
+      // New image uploaded: store it under the category folder with a
+      // unique name, then let updateMenuItem clean up the old file once
+      // the row is safely updated (see _menu-store.js).
+      const uploaded = await uploadMenuImage(body.imageBase64, body.name, body.category)
+      patch.imageUrl = uploaded?.url || body.imageUrl || null
+      patch.imagePath = uploaded?.path || null
+    } else if (body.imageUrl) {
+      patch.imageUrl = body.imageUrl
+    }
+
+    const updated = await updateMenuItem(id, patch)
 
     if (!updated) {
       return res.status(404).json({ message: 'Menu item tidak ditemukan' })

@@ -73,6 +73,7 @@ function mapRow(row) {
     category: row.category || 'Makanan',
     price: toNumber(row.price, 0),
     imageUrl: row.image_url || MENU_PLACEHOLDER_IMAGE,
+    imagePath: row.image_path || null,
     badge: row.badge || '',
     description: row.description || '',
     hasVariant: Boolean(row.has_variant),
@@ -93,6 +94,7 @@ function buildRow(item = {}, existing = null) {
     category: item.category === 'Minuman' || existing?.category === 'Minuman' ? 'Minuman' : 'Makanan',
     price: toNumber(item.price ?? existing?.price, 0),
     image_url: item.imageUrl ?? existing?.image_url ?? existing?.imageUrl ?? MENU_PLACEHOLDER_IMAGE,
+    image_path: item.imagePath !== undefined ? (item.imagePath || null) : (existing?.image_path ?? existing?.imagePath ?? null),
     badge: item.badge !== undefined ? (item.badge || null) : (existing?.badge || null),
     description: item.description !== undefined ? (item.description || null) : (existing?.description || null),
     has_variant: hasVariant,
@@ -109,6 +111,7 @@ function seedLocalRows() {
     category: item.category === 'Minuman' ? 'Minuman' : 'Makanan',
     price: toNumber(item.price, 0),
     image_url: item.imageUrl || item.image || MENU_PLACEHOLDER_IMAGE,
+    image_path: item.imagePath || null,
     badge: item.badge || null,
     description: item.desc || item.description || null,
     has_variant: Boolean(item.hasVariantPage || item.hasVariant),
@@ -236,6 +239,7 @@ export async function createMenuItem(item = {}) {
           category: row.category,
           price: row.price,
           image_url: row.image_url,
+          image_path: row.image_path,
           badge: row.badge,
           description: row.description,
           has_variant: row.has_variant,
@@ -307,6 +311,12 @@ export async function updateMenuItem(id, patch = {}) {
       throw error
     }
 
+    const oldImagePath = existing?.image_path || null
+    const newImagePath = merged.image_path || null
+    if (patch.imagePath !== undefined && oldImagePath && oldImagePath !== newImagePath) {
+      await deleteMenuImage(oldImagePath)
+    }
+
     return clone(mapRow(data))
   } catch (error) {
     if (!isMenuBackendUnavailable(error)) {
@@ -337,6 +347,11 @@ export async function deleteMenuItem(id) {
   if (!resolvedId) throw new Error('Menu item id is required')
 
   try {
+    const existing = await getMenuItemById(resolvedId)
+    if (existing?.imagePath) {
+      await deleteMenuImage(existing.imagePath)
+    }
+
     const result = await querySupabase((supabase) =>
       supabase.from(MENU_TABLE).delete().eq('id', resolvedId),
     )
@@ -358,41 +373,121 @@ export async function deleteMenuItem(id) {
   }
 }
 
-export async function uploadMenuImage(base64Data, fileName = 'menu.jpg') {
+const MENU_IMAGE_BUCKET = 'menu-images'
+
+function getCategoryFolder(category) {
+  return String(category || '').trim().toLowerCase() === 'minuman' ? 'minuman' : 'makanan'
+}
+
+// Uploads a base64-encoded image to the `menu-images` bucket under a
+// makanan/ or minuman/ folder, using a unique (UUID + timestamp) filename.
+// Returns { url, path } where `path` is the storage object path (to be
+// stored in `image_path`) and `url` is the public URL (to be stored in
+// `image_url`). Returns null if no base64 image was provided.
+export async function uploadMenuImage(base64Data, fileName = 'menu.jpg', category = 'Makanan') {
   if (!base64Data) return null
 
   const input = String(base64Data)
   const matches = input.match(/^data:(image\/[a-zA-Z+.-]+);base64,(.+)$/)
   if (!matches) {
-    return input
+    // Not a base64 data URL (e.g. an existing remote URL was passed through) -
+    // nothing to upload, keep it as-is with no storage path.
+    return { url: input, path: null }
   }
 
   const contentType = matches[1]
   const buffer = Buffer.from(matches[2], 'base64')
   const extension = contentType.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg'
-  const safeName = String(fileName || 'menu').replace(/[^a-zA-Z0-9-_]/g, '-').slice(0, 40)
-  const pathName = `${Date.now()}-${safeName}.${extension}`
+  const safeName = String(fileName || 'menu')
+    .toLowerCase()
+    .replace(/[^a-zA-Z0-9-_]/g, '-')
+    .slice(0, 40)
+  const folder = getCategoryFolder(category)
+  const uniqueSuffix = `${Date.now()}-${randomUUID()}`
+  const objectPath = `${folder}/${safeName}-${uniqueSuffix}.${extension}`
 
   try {
     const supabase = await getSupabaseClient()
     if (!supabase?.storage) {
-      return input
+      return { url: input, path: null }
     }
 
     const { error: uploadError } = await supabase.storage
-      .from('menu-images')
-      .upload(pathName, buffer, { contentType, upsert: true })
+      .from(MENU_IMAGE_BUCKET)
+      .upload(objectPath, buffer, { contentType, upsert: true })
 
     if (uploadError) {
       throw uploadError
     }
 
-    const { data } = supabase.storage.from('menu-images').getPublicUrl(pathName)
-    return data?.publicUrl || input
+    const { data } = supabase.storage.from(MENU_IMAGE_BUCKET).getPublicUrl(objectPath)
+    return { url: data?.publicUrl || input, path: objectPath }
   } catch (error) {
     if (isMenuBackendUnavailable(error)) {
-      return input
+      return { url: input, path: null }
     }
     throw new Error(`Gagal upload gambar: ${error.message}`)
+  }
+}
+
+// Removes a previously uploaded image from the `menu-images` bucket.
+// Best-effort: failures are logged but never thrown, so a storage hiccup
+// never blocks a menu create/update/delete operation.
+export async function deleteMenuImage(imagePath) {
+  const resolvedPath = String(imagePath || '').trim()
+  if (!resolvedPath) return { ok: true, skipped: true }
+
+  try {
+    const supabase = await getSupabaseClient()
+    if (!supabase?.storage) {
+      return { ok: true, skipped: true }
+    }
+
+    const { error } = await supabase.storage.from(MENU_IMAGE_BUCKET).remove([resolvedPath])
+    if (error) {
+      throw error
+    }
+
+    return { ok: true }
+  } catch (error) {
+    console.warn('[MENU IMAGE] Gagal menghapus file lama dari Storage', {
+      path: resolvedPath,
+      message: error.message,
+    })
+    return { ok: false, message: error.message }
+  }
+}
+
+// Fetches a single menu item row (raw, without the local-file fallback)
+// so callers (e.g. delete) can read fields like image_path before mutating.
+export async function getMenuItemById(id) {
+  const resolvedId = String(id || '').trim()
+  if (!resolvedId) return null
+
+  try {
+    const supabase = await getSupabaseClient()
+    if (!supabase) {
+      throw new Error('Supabase client unavailable')
+    }
+
+    const { data, error } = await supabase
+      .from(MENU_TABLE)
+      .select('*')
+      .eq('id', resolvedId)
+      .maybeSingle()
+
+    if (error) {
+      throw error
+    }
+
+    return data ? clone(mapRow(data)) : null
+  } catch (error) {
+    if (!isMenuBackendUnavailable(error)) {
+      throw new Error(`Failed to load menu item ${resolvedId}: ${error.message}`)
+    }
+
+    const localRows = await readLocalRows()
+    const row = localRows.find((item) => String(item.id) === resolvedId)
+    return row ? clone(mapRow(row)) : null
   }
 }
