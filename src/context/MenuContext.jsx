@@ -1,6 +1,6 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { fallbackMenuItems } from '../data/menuItems'
+import { MENU_PLACEHOLDER_IMAGE, fallbackMenuItems } from '../data/menuItems'
 import { fetchMenuItems } from '../lib/menuApi'
 
 const MenuContext = createContext(null)
@@ -13,7 +13,7 @@ function normalizeBackendItem(row) {
     price: Number(row.price) || 0,
     desc: row.description || '',
     badge: row.badge || '',
-    image: row.imageUrl || '',
+    image: row.imageUrl || MENU_PLACEHOLDER_IMAGE,
     emoji: row.imageUrl ? '' : '🍽️',
     hasVariantPage: Boolean(row.hasVariant) && Array.isArray(row.variants) && row.variants.length > 0,
     variantOptions: Array.isArray(row.variants)
