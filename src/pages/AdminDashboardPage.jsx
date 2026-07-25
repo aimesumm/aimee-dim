@@ -53,8 +53,8 @@ export default function AdminDashboardPage() {
             <p className="eyebrow">Admin</p>
             <h2>Dashboard Menu</h2>
             <p className="section-copy">
-              {source === 'fallback'
-                ? 'Menampilkan data menu bawaan (backend menu belum terhubung).'
+              {source === 'error'
+                ? 'Gagal memuat menu dari backend. Cek koneksi Supabase, lalu refresh halaman ini.'
                 : 'Klik menu untuk mengedit. Perubahan langsung tersimpan ke backend.'}
             </p>
           </div>
