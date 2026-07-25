@@ -1822,6 +1822,101 @@ a { color: inherit; }
   margin-top: 4px;
 }
 
+
+.profile-stack {
+  padding: 26px 0 60px;
+  display: grid;
+  gap: 18px;
+}
+
+.profile-hero,
+.profile-section {
+  padding: 22px;
+  display: grid;
+  gap: 16px;
+}
+
+.profile-hero-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.profile-hero-label,
+.profile-section-title {
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: .18em;
+  font-size: .72rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.profile-hero h3,
+.profile-section h3 {
+  margin: 0;
+  line-height: 1.1;
+  letter-spacing: -.03em;
+}
+
+.profile-link-list {
+  display: grid;
+  gap: 10px;
+}
+
+.profile-link-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  border-radius: 18px;
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+  color: var(--text);
+  text-decoration: none;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.profile-link-item:hover {
+  transform: translateY(-1px);
+  border-color: rgba(232, 106, 160, 0.34);
+  box-shadow: var(--shadow-soft);
+}
+
+.profile-link-item-disabled {
+  opacity: .72;
+}
+
+.profile-link-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(232, 106, 160, 0.1);
+  flex: 0 0 auto;
+}
+
+.profile-link-meta {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.profile-link-name {
+  font-weight: 800;
+}
+
+.profile-link-handle {
+  color: var(--muted);
+  font-size: .88rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ---------------------------------------------------------------- */
 /* Admin: login, dashboard, menu form                                 */
 /* ---------------------------------------------------------------- */
