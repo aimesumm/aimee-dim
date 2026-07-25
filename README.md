@@ -92,3 +92,41 @@ Jika project dijalankan di Vercel, `vercel.json` tetap mempertahankan rewrite su
 ## File yang dibersihkan
 
 Beberapa file legacy yang tidak dipakai lagi sudah dihapus untuk merapikan project, termasuk file style duplikat dan komponen/page lama yang tidak terpakai di alur baru.
+
+## Fitur Admin (Kelola Menu)
+
+Ditambahkan tanpa mengubah alur checkout/pembayaran yang sudah ada:
+
+- Ikon **⋮** di header membuka Profile Menu (bottom sheet): Login Account, Social Media, Contact Us.
+- `Login Account` → `/admin/login` (hanya password) → jika benar masuk ke `/admin/dashboard`.
+- Dashboard admin menampilkan seluruh menu; klik salah satu untuk edit, atau klik "➕ Tambah Menu" untuk menambah.
+- Form menu: upload gambar, nama, harga, kategori (Makanan/Minuman), deskripsi, badge, dan varian opsional (checkbox "Menggunakan Varian" + baris nama/harga varian yang bisa ditambah/dihapus).
+- Halaman utama mengambil data menu dari `GET /api/menu-list`. Jika backend/tabel belum siap, halaman otomatis memakai data bawaan di `src/data/menuItems.js` supaya tidak pernah error/kosong.
+
+### Endpoint baru (tidak mengubah endpoint order yang sudah ada)
+
+- `GET /api/menu-list` — publik, daftar menu.
+- `POST /api/menu-create` — admin only (header `x-admin-token`).
+- `PATCH /api/menu-update` — admin only.
+- `DELETE /api/menu-delete` — admin only.
+- `POST /api/admin-login` — cek password, mengembalikan token.
+
+### Environment variable tambahan
+
+- `ADMIN_PASSWORD` (backend) — password login admin. Default `admindimsum` jika tidak diset; **wajib diganti** sebelum deploy produksi.
+- `VITE_INSTAGRAM_URL`, `VITE_INSTAGRAM_HANDLE`
+- `VITE_TIKTOK_URL`, `VITE_TIKTOK_HANDLE`
+- `VITE_FACEBOOK_URL`, `VITE_FACEBOOK_HANDLE`
+- `VITE_CONTACT_EMAIL`
+- `VITE_OWNER_WHATSAPP` (sudah ada) dipakai juga untuk tombol WhatsApp di Contact Us.
+
+Ikon sosial media hanya muncul jika URL-nya diisi.
+
+### Migrasi database & storage
+
+Jalankan `supabase/migrations/20260726_add_menu_items.sql` di Supabase SQL editor. File ini:
+
+- Membuat tabel baru `menu_items` (tidak menyentuh tabel `orders`).
+- Mencoba membuat storage bucket publik `menu-images` untuk gambar menu. Jika baris `insert into storage.buckets ...` gagal (tergantung kebijakan project Anda), buat bucket publik bernama `menu-images` secara manual lewat tab Storage di dashboard Supabase.
+
+Jika tabel `menu_items` belum ada / kosong, halaman utama tetap tampil normal memakai data bawaan — fitur pemesanan, checkout, QRIS, dan Telegram tidak terpengaruh sama sekali.
