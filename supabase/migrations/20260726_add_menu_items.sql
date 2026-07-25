@@ -1,7 +1,8 @@
 -- Menu management for the Admin Dashboard.
 -- Run this in the Supabase SQL editor. It only adds a new table, it does not
 -- touch the existing `orders` table or any other data already in use.
--- The app seeds this table from the fallback menu list the first time it is empty.
+-- The table starts empty: menu items are added only through Admin -> Tambah
+-- Menu (no dummy/demo data is auto-seeded).
 
 create table if not exists public.menu_items (
   id uuid primary key default gen_random_uuid(),
