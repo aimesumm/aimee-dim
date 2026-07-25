@@ -1,6 +1,6 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { MENU_PLACEHOLDER_IMAGE, fallbackMenuItems } from '../data/menuItems'
+import { MENU_PLACEHOLDER_IMAGE } from '../data/menuItems'
 import { fetchMenuItems } from '../lib/menuApi'
 
 const MenuContext = createContext(null)
@@ -28,25 +28,22 @@ function normalizeBackendItem(row) {
 }
 
 export function MenuProvider({ children }) {
-  const [items, setItems] = useState(fallbackMenuItems)
-  const [source, setSource] = useState('fallback')
+  // Mulai dari kosong: menu HANYA berasal dari Supabase lewat /api/menu-list.
+  // Tidak ada lagi menu bawaan/dummy yang tampil di halaman utama.
+  const [items, setItems] = useState([])
+  const [source, setSource] = useState('loading')
   const [loading, setLoading] = useState(true)
 
   const refresh = useCallback(async () => {
     setLoading(true)
     try {
       const rows = await fetchMenuItems()
-      if (rows.length) {
-        setItems(rows.map(normalizeBackendItem))
-        setSource('backend')
-      } else {
-        setItems(fallbackMenuItems)
-        setSource('fallback')
-      }
+      setItems(rows.map(normalizeBackendItem))
+      setSource('backend')
     } catch (error) {
-      console.warn('[MENU] Gagal memuat menu dari backend, memakai data bawaan.', error.message)
-      setItems(fallbackMenuItems)
-      setSource('fallback')
+      console.warn('[MENU] Gagal memuat menu dari backend.', error.message)
+      setItems([])
+      setSource('error')
     } finally {
       setLoading(false)
     }
