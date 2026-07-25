@@ -46,8 +46,8 @@ export default function CartDrawer({ onOpenCheckout }) {
             >
               <div className="cart-item-info">
                 <strong>{item.name}</strong>
-                <span>{formatItemVariant(item) || 'Tanpa varian'}</span>
-                <span>{currency.format(item.price)}</span>
+                <span>Varian: {item.variantLabel || item.variant || '-'}</span>
+                <span>Harga: {currency.format(item.price * item.qty)}</span>
               </div>
               <div className="qty-control">
                 <button type="button" onClick={() => updateQty(item.id, -1, item.variant)} aria-label={`Kurangi ${item.name}`}>-</button>
