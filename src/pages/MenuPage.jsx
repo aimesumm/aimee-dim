@@ -1,15 +1,13 @@
 
-import { useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { useCart } from '../context/CartContext'
+import { useOrderDraft } from '../context/OrderDraftContext'
 import Header from '../components/Header'
 import Hero from '../components/Hero'
 import MenuSection from '../components/MenuSection'
-import CartDrawer from '../components/CartDrawer'
-import CustomerDetailsCard from '../components/CustomerDetailsCard'
 import Footer from '../components/Footer'
-import ChatbotWidget from '../components/ChatbotWidget'
-import { useOrderDraft } from '../context/OrderDraftContext'
+import { currency, getSubtotal } from '../data/siteConfig'
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 22 },
@@ -22,12 +20,12 @@ const sectionVariants = {
 
 export default function MenuPage() {
   const navigate = useNavigate()
-  const menuRef = useRef(null)
-  const cartRef = useRef(null)
+  const { cart } = useCart()
   const { preferredMethod } = useOrderDraft()
 
-  const jumpMenu = () => menuRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  const openCart = () => cartRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const subtotal = getSubtotal(cart)
+  const serviceFee = cart.length ? 2000 : 0
+  const total = subtotal + serviceFee
 
   const goCheckout = () => {
     navigate('/order', { state: { method: preferredMethod } })
@@ -35,37 +33,26 @@ export default function MenuPage() {
 
   return (
     <div className="app-shell">
-      <Header onOpenCheckout={goCheckout} onGoMenu={jumpMenu} />
+      <Header onGoMenu={() => document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
 
       <main className="container home-stack">
         <motion.div custom={0} variants={sectionVariants} initial="hidden" animate="show">
-          <Hero onJumpMenu={jumpMenu} onOpenCheckout={goCheckout} />
+          <Hero />
         </motion.div>
 
-        <motion.div custom={0.05} variants={sectionVariants} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}>
-          <CustomerDetailsCard />
+        <motion.div custom={0.08} variants={sectionVariants} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}>
+          <MenuSection />
         </motion.div>
-
-        <div ref={menuRef}>
-          <motion.div custom={0.1} variants={sectionVariants} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}>
-            <MenuSection />
-          </motion.div>
-        </div>
-
-        <div ref={cartRef}>
-          <motion.div custom={0.1} variants={sectionVariants} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}>
-            <CartDrawer onOpenCheckout={goCheckout} />
-          </motion.div>
-        </div>
       </main>
 
-      <Footer />
+      {cart.length ? (
+        <button className="floating-checkout glass-card" type="button" onClick={goCheckout} aria-label="Checkout">
+          <span className="floating-checkout-icon">🛒</span>
+          <span className="floating-checkout-price">{currency.format(total)}</span>
+        </button>
+      ) : null}
 
-      <ChatbotWidget
-        onScrollMenu={jumpMenu}
-        onOpenCart={openCart}
-        onOpenCheckout={goCheckout}
-      />
+      <Footer />
     </div>
   )
 }

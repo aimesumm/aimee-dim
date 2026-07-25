@@ -3,10 +3,11 @@ import { useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import PaymentMethodPicker from '../components/PaymentMethodPicker'
+import CustomerDetailsCard from '../components/CustomerDetailsCard'
 import { useCart } from '../context/CartContext'
 import { useOrderDraft } from '../context/OrderDraftContext'
 import { createOrder, createQris } from '../services/paymentGateway'
-import { currency, getOrderItemsCount, getSubtotal } from '../data/siteConfig'
+import { currency, formatItemVariant, getOrderItemsCount, getSubtotal } from '../data/siteConfig'
 import { normalizeOrder, writeLastOrder } from '../lib/orderHelpers'
 
 function readSelectedMethod(locationState, preferredMethod) {
@@ -16,14 +17,15 @@ function readSelectedMethod(locationState, preferredMethod) {
 export default function OrderPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { cart, clearCart } = useCart()
+  const { cart, clearCart, updateQty } = useCart()
   const { customer, preferredMethod, setPreferredMethod } = useOrderDraft()
   const [method, setMethod] = useState(() => readSelectedMethod(location.state, preferredMethod))
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   const subtotal = useMemo(() => getSubtotal(cart), [cart])
-  const total = subtotal + (cart.length ? 2000 : 0)
+  const serviceFee = cart.length ? 2000 : 0
+  const total = subtotal + serviceFee
   const itemCount = getOrderItemsCount(cart)
 
   const buildItems = () => cart.map((item) => ({
@@ -44,7 +46,7 @@ export default function OrderPage() {
     }
 
     if (!customer.name.trim() || !customer.phone.trim()) {
-      setError('Isi nama dan nomor WhatsApp pelanggan terlebih dahulu di halaman utama.')
+      setError('Isi nama dan nomor WhatsApp pelanggan terlebih dahulu.')
       return
     }
 
@@ -107,42 +109,84 @@ export default function OrderPage() {
 
   return (
     <div className="app-shell">
-      <main className="container checkout-only-page">
-        <div className="checkout-compact">
-          <motion.div
-            className="checkout-head glass-card"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25 }}
-          >
+      <main className="container checkout-only-page order-page-layout">
+        <motion.section
+          className="order-head glass-card"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25 }}
+        >
+          <div>
+            <p className="eyebrow">Order</p>
+            <h1>Pesanan yang sudah dipilih</h1>
+            <p className="hero-text">Edit jumlah item di sini, lalu lanjutkan ke metode pembayaran di bagian bawah.</p>
+          </div>
+          <div className="checkout-meta">
+            <div className="meta-box">
+              <span>Total item</span>
+              <strong>{itemCount}</strong>
+            </div>
+            <div className="meta-box">
+              <span>Total semua</span>
+              <strong>{currency.format(total)}</strong>
+            </div>
+          </div>
+        </motion.section>
+
+        <section className="order-items-panel glass-card">
+          <div className="section-head compact">
             <div>
-              <p className="eyebrow">Order</p>
-              <h1>Langkah terakhir sebelum pembayaran</h1>
-              <p className="hero-text">
-                Semua order masuk ke Telegram owner lebih dulu. WhatsApp baru muncul setelah status pembayaran berhasil.
-              </p>
+              <p className="eyebrow">Daftar pesanan</p>
+              <h2>Geser ke kanan atau kiri</h2>
             </div>
-            <div className="checkout-meta">
-              <div className="meta-box">
-                <span>Jumlah item</span>
-                <strong>{itemCount}</strong>
-              </div>
-              <div className="meta-box">
-                <span>Total</span>
-                <strong>{currency.format(total)}</strong>
-              </div>
+          </div>
+
+          {!cart.length ? (
+            <div className="empty-state">
+              <div className="empty-icon">🧾</div>
+              <p>Belum ada item yang masuk ke keranjang.</p>
             </div>
-          </motion.div>
+          ) : (
+            <div className="order-scroll" role="list" aria-label="Daftar pesanan">
+              {cart.map((item) => {
+                const lineTotal = Number(item.price || 0) * Number(item.qty || 0)
+                return (
+                  <motion.article
+                    key={`${item.id}-${item.variant || ''}`}
+                    className="order-item-card"
+                    whileHover={{ y: -2 }}
+                  >
+                    <div className="order-item-thumb" aria-hidden="true">{item.emoji || '🥟'}</div>
+                    <div className="order-item-copy">
+                      <strong>{item.name}</strong>
+                      <span>{formatItemVariant(item) || 'Tanpa varian'}</span>
+                      <small>{currency.format(item.price)}</small>
+                    </div>
+                    <div className="order-item-actions">
+                      <div className="qty-control order-qty">
+                        <button type="button" onClick={() => updateQty(item.id, -1, item.variant)} aria-label={`Kurangi ${item.name}`}>-</button>
+                        <span>{item.qty}</span>
+                        <button type="button" onClick={() => updateQty(item.id, 1, item.variant)} aria-label={`Tambah ${item.name}`}>+</button>
+                      </div>
+                      <strong className="order-line-total">{currency.format(lineTotal)}</strong>
+                    </div>
+                  </motion.article>
+                )
+              })}
+            </div>
+          )}
+        </section>
 
-          <PaymentMethodPicker
-            value={method}
-            onChange={setMethod}
-            onContinue={handleContinue}
-            loading={loading}
-          />
+        <CustomerDetailsCard />
 
-          {error ? <div className="notice error">{error}</div> : null}
-        </div>
+        <PaymentMethodPicker
+          value={method}
+          onChange={setMethod}
+          onContinue={handleContinue}
+          loading={loading}
+        />
+
+        {error ? <div className="notice error">{error}</div> : null}
       </main>
     </div>
   )
