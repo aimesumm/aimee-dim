@@ -2,7 +2,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { useCart } from '../context/CartContext'
-import { currency, getSubtotal, formatItemVariant } from '../data/siteConfig'
+import { currency, getSubtotal } from '../data/siteConfig'
 
 export default function CartDrawer({ onOpenCheckout }) {
   const { cart, updateQty } = useCart()

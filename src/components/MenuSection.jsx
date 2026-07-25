@@ -1,21 +1,25 @@
 
 import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { menuItems } from '../data/menuItems'
 import { categories } from '../data/siteConfig'
 import { useCart } from '../context/CartContext'
+import { useMenu } from '../context/MenuContext'
+import { useAdminAuth } from '../context/AdminAuthContext'
 import MenuCard from './MenuCard'
+import AddMenuCard from './AddMenuCard'
 
 export default function MenuSection() {
   const [activeCategory, setActiveCategory] = useState('Semua')
   const { addItem } = useCart()
+  const { items } = useMenu()
+  const { isAdmin } = useAdminAuth()
   const navigate = useNavigate()
 
   const filtered = useMemo(() => {
     return activeCategory === 'Semua'
-      ? menuItems
-      : menuItems.filter((item) => item.category === activeCategory)
-  }, [activeCategory])
+      ? items
+      : items.filter((item) => item.category === activeCategory)
+  }, [activeCategory, items])
 
   const handleAdd = (item) => {
     if (item.hasVariantPage) {
@@ -29,6 +33,7 @@ export default function MenuSection() {
       price: item.price,
       category: item.category,
       emoji: item.emoji,
+      image: item.image,
       variant: '',
       variantLabel: '',
     })
@@ -60,6 +65,10 @@ export default function MenuSection() {
         {filtered.map((item, index) => (
           <MenuCard key={item.id} item={item} index={index} onAdd={handleAdd} />
         ))}
+
+        {isAdmin ? (
+          <AddMenuCard index={filtered.length} onClick={() => navigate('/admin/menu/new')} />
+        ) : null}
       </div>
     </section>
   )
