@@ -2,9 +2,9 @@
 import React, { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { menuItems } from '../data/menuItems'
 import { currency } from '../data/siteConfig'
 import { useCart } from '../context/CartContext'
+import { useMenu } from '../context/MenuContext'
 import VariantSelector from '../components/VariantSelector'
 import QuantitySelector from '../components/QuantitySelector'
 import PriceSummary from '../components/PriceSummary'
@@ -13,11 +13,22 @@ export default function OriginalVariantPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { addItem } = useCart()
+  const { items, loading } = useMenu()
 
-  const item = useMemo(() => menuItems.find((m) => String(m.id) === String(id)), [id])
+  const item = useMemo(() => items.find((m) => String(m.id) === String(id)), [id, items])
 
   const [selectedKey, setSelectedKey] = useState(null)
   const [quantity, setQuantity] = useState(1)
+
+  if (!item && loading) {
+    return (
+      <div className="app-shell">
+        <div className="container variant-page-empty">
+          <p>Memuat menu...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!item) {
     return (
@@ -47,6 +58,7 @@ export default function OriginalVariantPage() {
         variantLabel: selectedOption?.label || '',
         category: item.category,
         emoji: item.emoji,
+        image: item.image,
       },
       quantity,
     )
@@ -60,7 +72,11 @@ export default function OriginalVariantPage() {
           ×
         </button>
         <div className="variant-hero-image">
-          <span aria-hidden="true">{item.emoji}</span>
+          {item.image ? (
+            <img src={item.image} alt={item.name} />
+          ) : (
+            <span aria-hidden="true">{item.emoji}</span>
+          )}
         </div>
       </div>
 

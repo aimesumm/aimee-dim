@@ -156,7 +156,9 @@ export default function OrderPage() {
                     className="order-item-card"
                     whileHover={{ y: -2 }}
                   >
-                    <div className="order-item-thumb" aria-hidden="true">{item.emoji || '🥟'}</div>
+                    <div className="order-item-thumb" aria-hidden="true">
+                      {item.image ? <img src={item.image} alt="" /> : (item.emoji || '🥟')}
+                    </div>
                     <div className="order-item-copy">
                       <strong>{item.name}</strong>
                       <span>{formatItemVariant(item) || 'Tanpa varian'}</span>
