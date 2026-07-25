@@ -35,11 +35,11 @@ function isMenuBackendUnavailable(error) {
     message.includes('schema cache') ||
     message.includes(`public.${MENU_TABLE}`) ||
     message.includes(MENU_TABLE) ||
-    message.includes('relation') && message.includes('does not exist') ||
+    (message.includes('relation') && message.includes('does not exist')) ||
     message.includes('could not find the table') ||
     message.includes('supabase environment variables are missing') ||
     message.includes('supabase client unavailable') ||
-    message.includes('storage') && message.includes('not found')
+    (message.includes('storage') && message.includes('not found'))
   )
 }
 
@@ -83,20 +83,21 @@ function mapRow(row) {
   }
 }
 
-function buildRow(item = {}) {
-  const hasVariant = Boolean(item.hasVariant)
-  const variants = hasVariant ? normalizeVariants(item.variants) : []
+function buildRow(item = {}, existing = null) {
+  const existingVariants = normalizeVariants(existing?.variants)
+  const nextVariants = item.variants !== undefined ? normalizeVariants(item.variants) : existingVariants
+  const hasVariant = item.hasVariant !== undefined ? Boolean(item.hasVariant) : Boolean(existing?.has_variant ?? existing?.hasVariant)
 
   return {
-    name: String(item.name || '').trim(),
-    category: item.category === 'Minuman' ? 'Minuman' : 'Makanan',
-    price: toNumber(item.price, 0),
-    image_url: item.imageUrl || MENU_PLACEHOLDER_IMAGE,
-    badge: item.badge || null,
-    description: item.description || null,
+    name: String(item.name ?? existing?.name ?? '').trim(),
+    category: item.category === 'Minuman' || existing?.category === 'Minuman' ? 'Minuman' : 'Makanan',
+    price: toNumber(item.price ?? existing?.price, 0),
+    image_url: item.imageUrl ?? existing?.image_url ?? existing?.imageUrl ?? MENU_PLACEHOLDER_IMAGE,
+    badge: item.badge !== undefined ? (item.badge || null) : (existing?.badge || null),
+    description: item.description !== undefined ? (item.description || null) : (existing?.description || null),
     has_variant: hasVariant,
-    variants,
-    sort_order: toNumber(item.sortOrder, 0),
+    variants: nextVariants,
+    sort_order: item.sortOrder !== undefined ? toNumber(item.sortOrder, toNumber(existing?.sort_order, 0)) : toNumber(existing?.sort_order, 0),
     updated_at: nowIso(),
   }
 }
@@ -152,27 +153,67 @@ async function querySupabase(handler) {
   return handler(supabase)
 }
 
+async function seedSupabaseMenuItems(supabase) {
+  const { data: existingRows, error: selectError } = await supabase
+    .from(MENU_TABLE)
+    .select('id')
+    .limit(1)
+
+  if (selectError) {
+    throw selectError
+  }
+
+  if (Array.isArray(existingRows) && existingRows.length > 0) {
+    return false
+  }
+
+  const seedRows = seedLocalRows().map(({ id, created_at, updated_at, ...row }) => ({
+    ...row,
+    created_at,
+    updated_at,
+  }))
+
+  const { error: insertError } = await supabase.from(MENU_TABLE).insert(seedRows)
+  if (insertError) {
+    throw insertError
+  }
+
+  return true
+}
+
 export async function listMenuItems() {
   try {
-    const result = await querySupabase((supabase) =>
-      supabase
+    const supabase = await getSupabaseClient()
+    if (!supabase) {
+      throw new Error('Supabase client unavailable')
+    }
+
+    const { data, error } = await supabase
+      .from(MENU_TABLE)
+      .select('*')
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true })
+
+    if (error) {
+      throw error
+    }
+
+    if (!data || data.length === 0) {
+      await seedSupabaseMenuItems(supabase)
+      const retry = await supabase
         .from(MENU_TABLE)
         .select('*')
         .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true }),
-    )
+        .order('created_at', { ascending: true })
 
-    if (result.error) {
-      throw result.error
+      if (retry.error) {
+        throw retry.error
+      }
+
+      return clone((retry.data || []).map(mapRow))
     }
 
-    const rows = result.data || []
-    if (rows.length) {
-      return clone(rows.map(mapRow))
-    }
-
-    const localRows = await readLocalRows()
-    return clone(localRows.map(mapRow))
+    return clone(data.map(mapRow))
   } catch (error) {
     if (!isMenuBackendUnavailable(error)) {
       throw new Error(`Failed to load menu items: ${error.message}`)
@@ -185,15 +226,25 @@ export async function listMenuItems() {
 
 export async function createMenuItem(item = {}) {
   const row = buildRow(item)
-  const storedRow = {
-    id: String(item.id || randomUUID()),
-    ...row,
-    created_at: nowIso(),
-  }
 
   try {
     const result = await querySupabase((supabase) =>
-      supabase.from(MENU_TABLE).insert(storedRow).select('*').single(),
+      supabase
+        .from(MENU_TABLE)
+        .insert({
+          name: row.name,
+          category: row.category,
+          price: row.price,
+          image_url: row.image_url,
+          badge: row.badge,
+          description: row.description,
+          has_variant: row.has_variant,
+          variants: row.variants,
+          sort_order: row.sort_order,
+          updated_at: row.updated_at,
+        })
+        .select('*')
+        .single(),
     )
 
     if (result.error) {
@@ -207,6 +258,12 @@ export async function createMenuItem(item = {}) {
     }
 
     const localRows = await readLocalRows()
+    const storedRow = {
+      id: String(item.id || randomUUID()),
+      ...row,
+      created_at: nowIso(),
+    }
+
     const nextRows = [...localRows, storedRow]
     await writeLocalRows(nextRows)
     return clone(mapRow(storedRow))
@@ -217,18 +274,40 @@ export async function updateMenuItem(id, patch = {}) {
   const resolvedId = String(id || '').trim()
   if (!resolvedId) throw new Error('Menu item id is required')
 
-  const patchRow = buildRow(patch)
-
   try {
-    const result = await querySupabase((supabase) =>
-      supabase.from(MENU_TABLE).update(patchRow).eq('id', resolvedId).select('*').maybeSingle(),
-    )
-
-    if (result.error) {
-      throw result.error
+    const supabase = await getSupabaseClient()
+    if (!supabase) {
+      throw new Error('Supabase client unavailable')
     }
 
-    return clone(mapRow(result.data))
+    const { data: existing, error: fetchError } = await supabase
+      .from(MENU_TABLE)
+      .select('*')
+      .eq('id', resolvedId)
+      .maybeSingle()
+
+    if (fetchError) {
+      throw fetchError
+    }
+
+    if (!existing) {
+      return null
+    }
+
+    const merged = buildRow(patch, existing)
+
+    const { data, error } = await supabase
+      .from(MENU_TABLE)
+      .update(merged)
+      .eq('id', resolvedId)
+      .select('*')
+      .maybeSingle()
+
+    if (error) {
+      throw error
+    }
+
+    return clone(mapRow(data))
   } catch (error) {
     if (!isMenuBackendUnavailable(error)) {
       throw new Error(`Failed to update menu item ${resolvedId}: ${error.message}`)
@@ -240,7 +319,7 @@ export async function updateMenuItem(id, patch = {}) {
 
     const updatedRow = {
       ...localRows[index],
-      ...patchRow,
+      ...buildRow(patch, localRows[index]),
       id: resolvedId,
       updated_at: nowIso(),
       created_at: localRows[index].created_at || nowIso(),
@@ -258,10 +337,14 @@ export async function deleteMenuItem(id) {
   if (!resolvedId) throw new Error('Menu item id is required')
 
   try {
-    const result = await querySupabase((supabase) => supabase.from(MENU_TABLE).delete().eq('id', resolvedId))
+    const result = await querySupabase((supabase) =>
+      supabase.from(MENU_TABLE).delete().eq('id', resolvedId),
+    )
+
     if (result.error) {
       throw result.error
     }
+
     return { ok: true, id: resolvedId }
   } catch (error) {
     if (!isMenuBackendUnavailable(error)) {
