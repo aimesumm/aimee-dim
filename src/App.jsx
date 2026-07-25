@@ -8,6 +8,7 @@ import QrisSuccessPage from './pages/QrisSuccessPage'
 import CashSuccessPage from './pages/CashSuccessPage'
 import PaymentFailedPage from './pages/PaymentFailedPage'
 import AdminLoginPage from './pages/AdminLoginPage'
+import ProfilePage from './pages/ProfilePage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import AdminMenuFormPage from './pages/AdminMenuFormPage'
 import { CartProvider } from './context/CartContext'
@@ -33,6 +34,7 @@ export default function App() {
                 <Route path="/success/cash/:orderId" element={<CashSuccessPage />} />
                 <Route path="/payment-failed/:orderId" element={<PaymentFailedPage />} />
                 <Route path="/payment-success" element={<Navigate to="/" replace />} />
+                <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/admin/login" element={<AdminLoginPage />} />
                 <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
                 <Route path="/admin/menu/new" element={<AdminMenuFormPage />} />
