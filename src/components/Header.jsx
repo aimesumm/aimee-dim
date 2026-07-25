@@ -1,14 +1,13 @@
-
-import React, { useState } from 'react'
-import ProfileMenu from './ProfileMenu'
+import React from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function Header({ onGoMenu }) {
-  const [profileOpen, setProfileOpen] = useState(false)
+  const navigate = useNavigate()
 
   return (
     <header className="topbar glass-card">
       <div className="brand-block">
-        <div className="brand">AIME-Dimsum</div>
+        <div className="brand">Aime Dimsum</div>
         <div className="subtitle">Sakura menu • QRIS • Tunai</div>
       </div>
 
@@ -17,14 +16,12 @@ export default function Header({ onGoMenu }) {
         <button
           className="icon-btn kebab-btn"
           type="button"
-          onClick={() => setProfileOpen(true)}
-          aria-label="Buka menu profil"
+          onClick={() => navigate('/profile')}
+          aria-label="Buka halaman profile"
         >
           ⋮
         </button>
       </div>
-
-      <ProfileMenu open={profileOpen} onClose={() => setProfileOpen(false)} />
     </header>
   )
 }
