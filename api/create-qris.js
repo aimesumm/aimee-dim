@@ -1,5 +1,5 @@
 import { attachTelegramMessageId, getOrder, updateOrder } from './_store.js'
-import { buildOwnerMessage } from './_shared.js'
+import { buildOwnerMessage, ensureTelegramWebhook } from './_shared.js'
 
 async function callConverter(total) {
   const qrisData = process.env.QRIS_DATA || ''
