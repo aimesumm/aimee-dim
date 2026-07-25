@@ -1,16 +1,22 @@
 
-import { dimsumVariants } from './siteConfig'
-
+// Hanya menu dengan `hasVariantPage: true` yang membuka halaman pilih varian
+// saat tombol Add ditekan. Menu lain langsung masuk ke keranjang.
 export const menuItems = [
   {
     id: 'd1',
     name: 'Dimsum Original',
     category: 'Dimsum',
-    price: 18000,
-    desc: 'Lembut, gurih, dan klasik.',
+    price: 15000,
+    desc: 'Dimsum ayam original dengan tekstur lembut.',
     badge: 'Best Seller',
     emoji: '🥟',
-    variants: dimsumVariants,
+    hasVariantPage: true,
+    variantOptions: [
+      { key: 'naori', label: 'Naori', price: 1000 },
+      { key: 'chili-oil', label: 'Chili Oil', price: 1000 },
+      { key: 'saus-mentai', label: 'Saus Mentai', price: 5000 },
+      { key: 'saus-mentai-hot', label: 'Saus Mentai Hot', price: 6000 },
+    ],
   },
   {
     id: 'd2',
@@ -20,7 +26,6 @@ export const menuItems = [
     desc: 'Pedas ringan dengan rasa mantap.',
     badge: 'Spicy',
     emoji: '🌶️',
-    variants: dimsumVariants,
   },
   {
     id: 'd3',
@@ -30,7 +35,6 @@ export const menuItems = [
     desc: 'Creamy dan lumer.',
     badge: 'Cheese',
     emoji: '🧀',
-    variants: dimsumVariants,
   },
   {
     id: 'd4',
@@ -40,7 +44,6 @@ export const menuItems = [
     desc: 'Udang fresh dan lembut.',
     badge: 'Premium',
     emoji: '🦐',
-    variants: dimsumVariants,
   },
   {
     id: 'm1',
