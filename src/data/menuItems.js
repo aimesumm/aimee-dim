@@ -1,0 +1,63 @@
+
+import { dimsumVariants } from './siteConfig'
+
+export const menuItems = [
+  {
+    id: 'd1',
+    name: 'Dimsum Original',
+    category: 'Dimsum',
+    price: 18000,
+    desc: 'Lembut, gurih, dan klasik.',
+    badge: 'Best Seller',
+    emoji: '🥟',
+    variants: dimsumVariants,
+  },
+  {
+    id: 'd2',
+    name: 'Dimsum Ayam Pedas',
+    category: 'Dimsum',
+    price: 19000,
+    desc: 'Pedas ringan dengan rasa mantap.',
+    badge: 'Spicy',
+    emoji: '🌶️',
+    variants: dimsumVariants,
+  },
+  {
+    id: 'd3',
+    name: 'Dimsum Keju',
+    category: 'Dimsum',
+    price: 20000,
+    desc: 'Creamy dan lumer.',
+    badge: 'Cheese',
+    emoji: '🧀',
+    variants: dimsumVariants,
+  },
+  {
+    id: 'd4',
+    name: 'Dimsum Udang',
+    category: 'Dimsum',
+    price: 22000,
+    desc: 'Udang fresh dan lembut.',
+    badge: 'Premium',
+    emoji: '🦐',
+    variants: dimsumVariants,
+  },
+  {
+    id: 'm1',
+    name: 'Mojito Lime',
+    category: 'Minuman',
+    price: 15000,
+    desc: 'Segar dan ringan.',
+    badge: 'Fresh',
+    emoji: '🍋‍🟩',
+  },
+  {
+    id: 'm2',
+    name: 'Mojito Strawberry',
+    category: 'Minuman',
+    price: 16000,
+    desc: 'Manis-asam seimbang.',
+    badge: 'Popular',
+    emoji: '🍓',
+  },
+]

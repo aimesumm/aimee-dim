@@ -1,0 +1,137 @@
+
+export const categories = ['Semua', 'Dimsum', 'Minuman']
+
+export const dimsumVariants = [
+  'Original',
+  'Naori',
+  'Chili Oil',
+  'Mentai Keju',
+  'Mentai Hot',
+]
+
+export const pickupPoint = {
+  name: 'AIME-Dimsum',
+  detail: 'Pesanan akan diproses setelah owner mengonfirmasi pembayaran.',
+  note: 'Tombol WhatsApp baru muncul setelah status berubah menjadi berhasil.',
+  map: 'https://maps.google.com/?q=AIME+Dimsum',
+}
+
+export const currency = new Intl.NumberFormat('id-ID', {
+  style: 'currency',
+  currency: 'IDR',
+  maximumFractionDigits: 0,
+})
+
+export const PAYMENT_STATUS = {
+  PENDING: 'pending',
+  PAID: 'paid',
+  PROCESSING: 'processing',
+  COMPLETED: 'completed',
+}
+
+export const PAYMENT_METHOD = {
+  QRIS: 'QRIS',
+  CASH: 'Tunai',
+}
+
+export const ORDER_STATUS_STEPS = [
+  PAYMENT_STATUS.PENDING,
+  PAYMENT_STATUS.PAID,
+  PAYMENT_STATUS.PROCESSING,
+  PAYMENT_STATUS.COMPLETED,
+]
+
+export const OWNER_WHATSAPP = import.meta.env.VITE_OWNER_WHATSAPP || ''
+export const TELEGRAM_BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || ''
+
+const STATUS_LABELS = {
+  [PAYMENT_STATUS.PENDING]: 'Menunggu Konfirmasi Owner',
+  [PAYMENT_STATUS.PAID]: 'Pembayaran Berhasil',
+  [PAYMENT_STATUS.PROCESSING]: 'Pesanan Diproses',
+  [PAYMENT_STATUS.COMPLETED]: 'Pesanan Selesai',
+}
+
+export function getStatusLabel(status) {
+  const normalized = String(status || '').toLowerCase()
+  return STATUS_LABELS[normalized] || status || 'Draft Pesanan'
+}
+
+export function getMethodLabel(method) {
+  const normalized = String(method || '').toUpperCase()
+  return PAYMENT_METHOD[normalized] || method || '-'
+}
+
+export function formatOrderTime(value) {
+  if (!value) return '-'
+  try {
+    return new Intl.DateTimeFormat('id-ID', {
+      dateStyle: 'long',
+      timeStyle: 'short',
+      timeZone: 'Asia/Makassar',
+    }).format(new Date(value))
+  } catch {
+    return value
+  }
+}
+
+export function getOrderItemsCount(items = []) {
+  return items.reduce((sum, item) => sum + Number(item.qty ?? item.quantity ?? 0), 0)
+}
+
+export function getSubtotal(items = []) {
+  return items.reduce((sum, item) => sum + Number(item.price ?? 0) * Number(item.qty ?? item.quantity ?? 0), 0)
+}
+
+export function formatItemVariant(item = {}) {
+  const variant = String(item.variant || item.variantLabel || '').trim()
+  if (!variant) return ''
+  return `(${variant})`
+}
+
+export function getOwnerOrderMessage(order = {}) {
+  const items = (order.items || [])
+    .map((item) => {
+      const variant = formatItemVariant(item)
+      return `- ${item.name}${variant ? ` ${variant}` : ''} x${item.qty ?? item.quantity ?? 0}`
+    })
+    .join('\n')
+
+  return `🍱 PESANAN BARU AIME-Dimsum\n\n🆔 Order ID:\n${order.orderId || '-'}\n\n👤 Nama Customer:\n${order.customerName || order.name || '-'}\n\n📱 Nomor Customer:\n${order.customerPhone || order.phone || '-'}\n\n🛒 Detail Pesanan:\n\n${items || '-'}\n\nJumlah Item:\n${getOrderItemsCount(order.items || [])}\n\n💰 Total:\n${currency.format(Number(order.total || 0))}\n\n💳 Metode Pembayaran:\n${getMethodLabel(order.paymentMethod || order.method)}\n\n📌 Status:\n${getStatusLabel(order.paymentStatus || order.status)}\n\n⏰ Waktu:\n${formatOrderTime(order.createdAt || order.time)}`
+}
+
+export function getCustomerOrderMessage(order = {}) {
+  return getOwnerOrderMessage(order)
+}
+
+export function getFollowupMessage(order = {}) {
+  return `Halo admin, pembayaran untuk order ${order.orderId || '-'} masih belum dikonfirmasi. Mohon bantu cek dan konfirmasi ya.`
+}
+
+export function getWhatsAppOrderUrl(order = {}) {
+  const phone = String(OWNER_WHATSAPP || '').replace(/[^\d]/g, '')
+  if (!phone) return ''
+  return `https://wa.me/${phone}?text=${encodeURIComponent(getOwnerOrderMessage(order))}`
+}
+
+export function getAdminContactUrl(order = {}) {
+  const phone = String(OWNER_WHATSAPP || '').replace(/[^\d]/g, '')
+  if (phone) {
+    return {
+      href: `https://wa.me/${phone}?text=${encodeURIComponent(getFollowupMessage(order))}`,
+      label: 'WhatsApp Admin',
+    }
+  }
+
+  const telegram = String(TELEGRAM_BOT_USERNAME || '').replace(/^@/, '').trim()
+  if (telegram) {
+    return {
+      href: `https://t.me/${telegram}`,
+      label: 'Telegram Admin',
+    }
+  }
+
+  return {
+    href: '#',
+    label: 'Admin',
+  }
+}
