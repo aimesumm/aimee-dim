@@ -44,6 +44,38 @@ export const ORDER_STATUS_STEPS = [
 export const OWNER_WHATSAPP = import.meta.env.VITE_OWNER_WHATSAPP || ''
 export const TELEGRAM_BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || ''
 
+export const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL || ''
+
+export const socialLinks = [
+  {
+    key: 'instagram',
+    label: 'Instagram',
+    icon: '📷',
+    handle: import.meta.env.VITE_INSTAGRAM_HANDLE || '',
+    url: import.meta.env.VITE_INSTAGRAM_URL || '',
+  },
+  {
+    key: 'tiktok',
+    label: 'TikTok',
+    icon: '🎵',
+    handle: import.meta.env.VITE_TIKTOK_HANDLE || '',
+    url: import.meta.env.VITE_TIKTOK_URL || '',
+  },
+  {
+    key: 'facebook',
+    label: 'Facebook',
+    icon: '📘',
+    handle: import.meta.env.VITE_FACEBOOK_HANDLE || '',
+    url: import.meta.env.VITE_FACEBOOK_URL || '',
+  },
+].filter((social) => social.url)
+
+export function getContactWhatsAppUrl() {
+  const phone = String(OWNER_WHATSAPP || '').replace(/[^\d]/g, '')
+  if (!phone) return ''
+  return `https://wa.me/${phone}`
+}
+
 const STATUS_LABELS = {
   [PAYMENT_STATUS.PENDING]: 'Menunggu Konfirmasi Owner',
   [PAYMENT_STATUS.PAID]: 'Pembayaran Berhasil',

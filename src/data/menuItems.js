@@ -1,7 +1,10 @@
 
+// Data cadangan yang dipakai jika backend menu (Supabase) belum terisi atau
+// gagal diakses. Halaman utama akan mengambil data dari /api/menu-list lebih
+// dulu; daftar ini hanya fallback supaya halaman tidak pernah kosong/error.
 // Hanya menu dengan `hasVariantPage: true` yang membuka halaman pilih varian
 // saat tombol Add ditekan. Menu lain langsung masuk ke keranjang.
-export const menuItems = [
+export const fallbackMenuItems = [
   {
     id: 'd1',
     name: 'Dimsum Original',
