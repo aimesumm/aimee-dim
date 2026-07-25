@@ -1,5 +1,6 @@
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Link } from 'react-router-dom' // jika memakai React Router
 import { OWNER_WHATSAPP, getContactWhatsAppUrl } from '../data/siteConfig'
 
 export default function ProfileMenu({ open, onClose }) {
@@ -7,7 +8,7 @@ export default function ProfileMenu({ open, onClose }) {
 
   return (
     <AnimatePresence>
-      {open ? (
+      {open && (
         <>
           <motion.div
             className="profile-sheet-backdrop"
@@ -16,6 +17,7 @@ export default function ProfileMenu({ open, onClose }) {
             exit={{ opacity: 0 }}
             onClick={onClose}
           />
+
           <motion.div
             className="profile-sheet glass-card"
             initial={{ opacity: 0, y: 24 }}
@@ -23,27 +25,56 @@ export default function ProfileMenu({ open, onClose }) {
             exit={{ opacity: 0, y: 24 }}
             transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="profile-sheet-handle" aria-hidden="true" />
+            <div className="profile-sheet-handle" />
 
+            {/* WhatsApp */}
             <div className="profile-sheet-section">
               <p className="profile-sheet-title">Contact WhatsApp</p>
+
               {whatsappUrl ? (
-                <a className="profile-sheet-item" href={whatsappUrl} target="_blank" rel="noreferrer">
-                  <span className="profile-sheet-item-icon" aria-hidden="true">💬</span>
+                <a
+                  className="profile-sheet-item"
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <span className="profile-sheet-item-icon">💬</span>
                   <span>WhatsApp</span>
-                  <span className="profile-sheet-handle-text">{OWNER_WHATSAPP}</span>
+                  <span className="profile-sheet-handle-text">
+                    {OWNER_WHATSAPP}
+                  </span>
                 </a>
               ) : (
-                <p className="profile-sheet-empty">Nomor WhatsApp belum diatur.</p>
+                <p className="profile-sheet-empty">
+                  Nomor WhatsApp belum diatur.
+                </p>
               )}
             </div>
 
-            <button type="button" className="ghost-btn profile-sheet-close" onClick={onClose}>
+            {/* Login Admin */}
+            <div className="profile-sheet-section">
+              <p className="profile-sheet-title">Admin</p>
+
+              <Link
+                to="/admin/login"
+                className="profile-sheet-item"
+                onClick={onClose}
+              >
+                <span className="profile-sheet-item-icon">🔒</span>
+                <span>Login Admin</span>
+              </Link>
+            </div>
+
+            <button
+              type="button"
+              className="ghost-btn profile-sheet-close"
+              onClick={onClose}
+            >
               Tutup
             </button>
           </motion.div>
         </>
-      ) : null}
+      )}
     </AnimatePresence>
   )
 }
