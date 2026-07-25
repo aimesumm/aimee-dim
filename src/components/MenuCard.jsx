@@ -2,6 +2,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { currency } from '../data/siteConfig'
+import { MENU_PLACEHOLDER_IMAGE } from '../data/menuItems'
 
 export default function MenuCard({ item, index = 0, onAdd }) {
   return (
@@ -14,8 +15,8 @@ export default function MenuCard({ item, index = 0, onAdd }) {
       whileHover={{ y: -3 }}
     >
       <div className="menu-card-v2-image">
-        {item.image ? (
-          <img src={item.image} alt={item.name} loading="lazy" />
+        {(item.image || MENU_PLACEHOLDER_IMAGE) ? (
+          <img src={item.image || MENU_PLACEHOLDER_IMAGE} alt={item.name} loading="lazy" />
         ) : (
           <span className="menu-card-v2-emoji" aria-hidden="true">{item.emoji}</span>
         )}
