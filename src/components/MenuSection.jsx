@@ -10,7 +10,7 @@ const cardVariants = {
   show: (index) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.42, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] },
+    transition: { duration: 0.38, delay: index * 0.045, ease: [0.16, 1, 0.3, 1] },
   }),
 }
 
@@ -22,7 +22,7 @@ function findCartQty(cart, id, variant) {
 export default function MenuSection() {
   const [activeCategory, setActiveCategory] = useState('Semua')
   const [selectedVariantByItem, setSelectedVariantByItem] = useState({})
-  const { cart, addItem, updateQty } = useCart()
+  const { cart, addItem } = useCart()
 
   const filtered = useMemo(() => {
     return activeCategory === 'Semua'
@@ -35,8 +35,8 @@ export default function MenuSection() {
       <div className="section-head">
         <div>
           <p className="eyebrow">Menu utama</p>
-          <h2>Pilihan dimsum dan minuman yang tertata</h2>
-          <p className="section-copy">Pilih varian sambal, lalu atur jumlah dengan tombol plus minus tanpa membuat halaman penuh sesak.</p>
+          <h2>Pilihan dimsum dan minuman yang ringkas</h2>
+          <p className="section-copy">Kartu dibuat kecil, ada slot gambar, dan varian bisa digeser ke samping agar layar tetap rapi.</p>
         </div>
         <div className="tabs scrollable">
           {categories.map((cat) => (
@@ -61,20 +61,25 @@ export default function MenuSection() {
           return (
             <motion.article
               key={item.id}
-              className="menu-card glass-card"
+              className="menu-card glass-card compact"
               custom={index}
               variants={cardVariants}
               initial="hidden"
               whileInView="show"
               viewport={{ once: true, margin: '-60px' }}
-              whileHover={{ y: -4 }}
+              whileHover={{ y: -3 }}
             >
               <div className="menu-top">
-                <div className="menu-avatar" aria-hidden="true">{item.emoji}</div>
+                <div className="menu-image-frame" aria-hidden="true">
+                  <span className="menu-avatar">{item.emoji}</span>
+                </div>
                 <span className="menu-badge">{item.badge}</span>
               </div>
-              <h3>{item.name}</h3>
-              <p>{item.desc}</p>
+
+              <div className="menu-body">
+                <h3>{item.name}</h3>
+                <p>{item.desc}</p>
+              </div>
 
               {item.variants?.length ? (
                 <div className="variant-picker">
@@ -94,47 +99,25 @@ export default function MenuSection() {
                 </div>
               ) : null}
 
-              <div className="menu-bottom">
-                <div>
+              <div className="menu-bottom compact">
+                <div className="price-block">
                   <strong>{currency.format(item.price)}</strong>
                   {qty ? <div className="qty-hint">{qty} di keranjang {formatItemVariant({ variant: selectedVariant })}</div> : null}
                 </div>
 
-                <div className="qty-control inline">
-                  <button
-                    type="button"
-                    onClick={() => updateQty(item.id, -1, selectedVariant)}
-                    disabled={!qty}
-                    aria-label={`Kurangi ${item.name}`}
-                  >
-                    -
-                  </button>
-                  <span>{qty}</span>
-                  <button
-                    type="button"
-                    onClick={() => addItem({
-                      ...item,
-                      variant: selectedVariant,
-                      variantLabel: selectedVariant,
-                    })}
-                    aria-label={`Tambah ${item.name}`}
-                  >
-                    +
-                  </button>
-                </div>
+                <button
+                  className="add-icon-btn"
+                  type="button"
+                  onClick={() => addItem({
+                    ...item,
+                    variant: selectedVariant,
+                    variantLabel: selectedVariant,
+                  })}
+                  aria-label={`Tambah ${item.name}`}
+                >
+                  +
+                </button>
               </div>
-
-              <button
-                className="ghost-btn small full-width"
-                type="button"
-                onClick={() => addItem({
-                  ...item,
-                  variant: selectedVariant,
-                  variantLabel: selectedVariant,
-                })}
-              >
-                Tambah ke keranjang
-              </button>
             </motion.article>
           )
         })}

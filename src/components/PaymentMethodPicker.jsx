@@ -2,6 +2,21 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 
+const METHODS = [
+  {
+    value: 'QRIS',
+    title: 'QRIS',
+    icon: '⬛',
+    desc: 'Cepat, modern, dan langsung masuk ke alur pembayaran.',
+  },
+  {
+    value: 'CASH',
+    title: 'Tunai',
+    icon: '💵',
+    desc: 'Pesanan dikonfirmasi owner setelah pembayaran diterima.',
+  },
+]
+
 export default function PaymentMethodPicker({ value, onChange, onContinue, loading }) {
   return (
     <motion.div
@@ -17,23 +32,23 @@ export default function PaymentMethodPicker({ value, onChange, onContinue, loadi
         </div>
       </div>
 
-      <div className="choice-stack">
-        <button
-          type="button"
-          className={value === 'QRIS' ? 'choice active' : 'choice'}
-          onClick={() => onChange('QRIS')}
-        >
-          <strong>QRIS</strong>
-          <span>Dinamis, cepat, dan langsung terhubung ke alur pembayaran.</span>
-        </button>
-        <button
-          type="button"
-          className={value === 'CASH' ? 'choice active' : 'choice'}
-          onClick={() => onChange('CASH')}
-        >
-          <strong>Tunai</strong>
-          <span>Pesanan masuk dulu, lalu owner mengonfirmasi dari Telegram.</span>
-        </button>
+      <div className="payment-option-grid">
+        {METHODS.map((method) => (
+          <label key={method.value} className={value === method.value ? 'payment-option active' : 'payment-option'}>
+            <input
+              type="radio"
+              name="payment-method"
+              value={method.value}
+              checked={value === method.value}
+              onChange={() => onChange(method.value)}
+            />
+            <span className="payment-option-icon" aria-hidden="true">{method.icon}</span>
+            <span className="payment-option-copy">
+              <strong>{method.title}</strong>
+              <small>{method.desc}</small>
+            </span>
+          </label>
+        ))}
       </div>
 
       <button className="primary-btn checkout-continue" type="button" onClick={onContinue} disabled={loading}>
