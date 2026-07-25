@@ -68,7 +68,7 @@ export const socialLinks = [
     handle: import.meta.env.VITE_FACEBOOK_HANDLE || '',
     url: import.meta.env.VITE_FACEBOOK_URL || '',
   },
-].filter((social) => social.url)
+]
 
 export function getContactWhatsAppUrl() {
   const phone = String(OWNER_WHATSAPP || '').replace(/[^\d]/g, '')
