@@ -9,6 +9,11 @@ export default function Hero() {
           <strong>Slot gambar menu</strong>
           <p>Area kosong untuk foto menu atau banner nanti.</p>
         </div>
+
+        <div className="hero-panel">
+          <strong>Alur singkat</strong>
+          <p>Menu → Order → Pembayaran → Konfirmasi owner</p>
+        </div>
     </section>
   )
 }
