@@ -30,7 +30,8 @@ export function CartProvider({ children }) {
   }, [cart])
 
   const api = useMemo(() => {
-    const addItem = (item) => {
+    const addItem = (item, quantity = 1) => {
+      const qtyToAdd = Math.max(1, Number(quantity) || 1)
       const nextItem = {
         ...item,
         variant: item.variant || '',
@@ -40,9 +41,9 @@ export function CartProvider({ children }) {
       setCart((prev) => {
         const found = prev.find((x) => itemKey(x) === itemKey(nextItem))
         if (found) {
-          return prev.map((x) => (itemKey(x) === itemKey(nextItem) ? { ...x, qty: Number(x.qty || 0) + 1 } : x))
+          return prev.map((x) => (itemKey(x) === itemKey(nextItem) ? { ...x, qty: Number(x.qty || 0) + qtyToAdd } : x))
         }
-        return [...prev, { ...nextItem, qty: 1 }]
+        return [...prev, { ...nextItem, qty: qtyToAdd }]
       })
     }
 
