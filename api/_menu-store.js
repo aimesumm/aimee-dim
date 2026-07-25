@@ -2,7 +2,7 @@ import { promises as fs } from 'fs'
 import os from 'os'
 import path from 'path'
 import { randomUUID } from 'crypto'
-import { MENU_PLACEHOLDER_IMAGE, fallbackMenuItems } from '../src/data/menuItems.js'
+import { MENU_PLACEHOLDER_IMAGE } from '../src/data/menuItems.js'
 import { nowIso } from './_shared.js'
 
 const MENU_TABLE = 'menu_items'
@@ -104,24 +104,6 @@ function buildRow(item = {}, existing = null) {
   }
 }
 
-function seedLocalRows() {
-  return fallbackMenuItems.map((item, index) => ({
-    id: String(item.id || randomUUID()),
-    name: item.name || '',
-    category: item.category === 'Minuman' ? 'Minuman' : 'Makanan',
-    price: toNumber(item.price, 0),
-    image_url: item.imageUrl || item.image || MENU_PLACEHOLDER_IMAGE,
-    image_path: item.imagePath || null,
-    badge: item.badge || null,
-    description: item.desc || item.description || null,
-    has_variant: Boolean(item.hasVariantPage || item.hasVariant),
-    variants: normalizeVariants(item.variantOptions || item.variants || []),
-    sort_order: toNumber(item.sortOrder, index),
-    created_at: nowIso(),
-    updated_at: nowIso(),
-  }))
-}
-
 async function readLocalRows() {
   if (Array.isArray(localStoreCache)) {
     return clone(localStoreCache)
@@ -135,13 +117,12 @@ async function readLocalRows() {
       return clone(parsed)
     }
   } catch {
-    // fall through to seed
+    // fall through: no local file yet, start empty (no dummy/demo data)
   }
 
-  const seeded = seedLocalRows()
-  localStoreCache = seeded
-  await writeLocalRows(seeded)
-  return clone(seeded)
+  localStoreCache = []
+  await writeLocalRows([])
+  return []
 }
 
 async function writeLocalRows(rows) {
@@ -154,34 +135,6 @@ async function querySupabase(handler) {
   const supabase = await getSupabaseClient()
   if (!supabase) return { error: new Error('Supabase client unavailable') }
   return handler(supabase)
-}
-
-async function seedSupabaseMenuItems(supabase) {
-  const { data: existingRows, error: selectError } = await supabase
-    .from(MENU_TABLE)
-    .select('id')
-    .limit(1)
-
-  if (selectError) {
-    throw selectError
-  }
-
-  if (Array.isArray(existingRows) && existingRows.length > 0) {
-    return false
-  }
-
-  const seedRows = seedLocalRows().map(({ id, created_at, updated_at, ...row }) => ({
-    ...row,
-    created_at,
-    updated_at,
-  }))
-
-  const { error: insertError } = await supabase.from(MENU_TABLE).insert(seedRows)
-  if (insertError) {
-    throw insertError
-  }
-
-  return true
 }
 
 export async function listMenuItems() {
@@ -201,22 +154,9 @@ export async function listMenuItems() {
       throw error
     }
 
-    if (!data || data.length === 0) {
-      await seedSupabaseMenuItems(supabase)
-      const retry = await supabase
-        .from(MENU_TABLE)
-        .select('*')
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true })
-
-      if (retry.error) {
-        throw retry.error
-      }
-
-      return clone((retry.data || []).map(mapRow))
-    }
-
-    return clone(data.map(mapRow))
+    // No auto-seeding of demo/dummy menu items: an empty table simply
+    // means the admin hasn't added any menu yet via "Tambah Menu".
+    return clone((data || []).map(mapRow))
   } catch (error) {
     if (!isMenuBackendUnavailable(error)) {
       throw new Error(`Failed to load menu items: ${error.message}`)
