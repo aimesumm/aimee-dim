@@ -2,7 +2,7 @@ import { promises as fs } from 'fs'
 import os from 'os'
 import path from 'path'
 import { randomUUID } from 'crypto'
-import { fallbackMenuItems } from '../src/data/menuItems.js'
+import { MENU_PLACEHOLDER_IMAGE, fallbackMenuItems } from '../src/data/menuItems.js'
 import { nowIso } from './_shared.js'
 
 const MENU_TABLE = 'menu_items'
@@ -72,7 +72,7 @@ function mapRow(row) {
     name: row.name || '',
     category: row.category || 'Makanan',
     price: toNumber(row.price, 0),
-    imageUrl: row.image_url || '',
+    imageUrl: row.image_url || MENU_PLACEHOLDER_IMAGE,
     badge: row.badge || '',
     description: row.description || '',
     hasVariant: Boolean(row.has_variant),
@@ -91,7 +91,7 @@ function buildRow(item = {}) {
     name: String(item.name || '').trim(),
     category: item.category === 'Minuman' ? 'Minuman' : 'Makanan',
     price: toNumber(item.price, 0),
-    image_url: item.imageUrl || null,
+    image_url: item.imageUrl || MENU_PLACEHOLDER_IMAGE,
     badge: item.badge || null,
     description: item.description || null,
     has_variant: hasVariant,
@@ -107,7 +107,7 @@ function seedLocalRows() {
     name: item.name || '',
     category: item.category === 'Minuman' ? 'Minuman' : 'Makanan',
     price: toNumber(item.price, 0),
-    image_url: item.imageUrl || item.image || null,
+    image_url: item.imageUrl || item.image || MENU_PLACEHOLDER_IMAGE,
     badge: item.badge || null,
     description: item.desc || item.description || null,
     has_variant: Boolean(item.hasVariantPage || item.hasVariant),
