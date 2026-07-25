@@ -26,6 +26,38 @@ export function nowIso() {
   return new Date().toISOString()
 }
 
+function getAdminSecret() {
+  return String(process.env.ADMIN_PASSWORD || 'admindimsum').trim()
+}
+
+export async function getAdminToken(password) {
+  const secret = getAdminSecret()
+  if (String(password || '') !== secret) return null
+
+  const cryptoModule = await import('crypto')
+  return cryptoModule.createHmac('sha256', secret).update('aime-dimsum-admin').digest('hex')
+}
+
+export async function isValidAdminToken(token) {
+  if (!token) return false
+  const cryptoModule = await import('crypto')
+  const secret = getAdminSecret()
+  const expected = cryptoModule.createHmac('sha256', secret).update('aime-dimsum-admin').digest('hex')
+  if (String(token).length !== expected.length) return false
+  return cryptoModule.timingSafeEqual(Buffer.from(String(token)), Buffer.from(expected))
+}
+
+export async function requireAdmin(req, res) {
+  const token = req.headers['x-admin-token'] || req.headers['X-Admin-Token']
+  const valid = await isValidAdminToken(token)
+  if (!valid) {
+    res.status(401).json({ message: 'Unauthorized: admin login required' })
+    return false
+  }
+  return true
+}
+
+
 export function getStatusLabel(status) {
   return STATUS_LABELS[String(status || '').toLowerCase()] || status || 'Draft Pesanan'
 }
