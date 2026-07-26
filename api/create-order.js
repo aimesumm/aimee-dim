@@ -78,26 +78,20 @@ export default async function handler(req, res) {
 
     let telegramMessage = null
 
-    if (paymentMethod === 'CASH') {
-      try {
-        await ensureTelegramWebhook(req)
-        telegramMessage = await sendTelegramMessage(created)
-        if (telegramMessage?.message_id) {
-          await attachTelegramMessageId(created.orderId, telegramMessage.message_id)
-        }
-        console.log('[CREATE ORDER] Telegram Sent', {
-          orderId: created.orderId,
-          messageId: telegramMessage?.message_id || null,
-        })
-      } catch (error) {
-        console.error('[CREATE ORDER] Telegram send failed', {
-          orderId: created.orderId,
-          message: error.message,
-        })
+    try {
+      await ensureTelegramWebhook(req)
+      telegramMessage = await sendTelegramMessage(created)
+      if (telegramMessage?.message_id) {
+        await attachTelegramMessageId(created.orderId, telegramMessage.message_id)
       }
-    } else {
-      console.log('[CREATE ORDER] QRIS order stored, notification will be sent after QRIS generation', {
+      console.log('[CREATE ORDER] Telegram Sent', {
         orderId: created.orderId,
+        messageId: telegramMessage?.message_id || null,
+      })
+    } catch (error) {
+      console.error('[CREATE ORDER] Telegram send failed', {
+        orderId: created.orderId,
+        message: error.message,
       })
     }
 
