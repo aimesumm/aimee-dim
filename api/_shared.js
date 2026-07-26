@@ -57,7 +57,6 @@ export async function requireAdmin(req, res) {
   return true
 }
 
-
 export function getStatusLabel(status) {
   return STATUS_LABELS[String(status || '').toLowerCase()] || status || 'Draft Pesanan'
 }
@@ -94,28 +93,133 @@ export function normalizePaymentStatus(value) {
   return 'pending'
 }
 
-export function buildOwnerMessage(order = {}) {
-  const items = (order.items || [])
-    .map((item) => `- ${item.name} x${item.qty ?? item.quantity ?? 0}`)
-    .join('\n')
+function formatVariant(item = {}) {
+  const label = String(item.variantLabel || item.variant_name || '').trim()
+  if (label) return `(${label})`
+  const variant = String(item.variant || '').trim()
+  if (!variant) return ''
+  if (/-variant-\d+$/i.test(variant)) return ''
+  return `(${variant})`
+}
 
-  return `🍱 PESANAN BARU AIME-Dimsum\n\n🆔 Order ID:\n${order.orderId || '-'}\n\n👤 Nama Customer:\n${order.customerName || order.name || '-'}\n\n📱 Nomor Customer:\n${order.customerPhone || order.phone || '-'}\n\n🛒 Detail Pesanan:\n\n${items || '-'}\n\nJumlah Item:\n${getOrderItemsCount(order.items || [])}\n\n💰 Total:\nRp ${Number(order.total || 0).toLocaleString('id-ID')}\n\n💳 Metode Pembayaran:\n${getMethodLabel(order.paymentMethod || order.method)}\n\n📌 Status:\n${getStatusLabel(order.paymentStatus || order.status)}\n\n⏰ Waktu:\n${formatOrderTime(order.createdAt || order.time)}`
+function buildItemsText(order = {}) {
+  return (order.items || [])
+    .map((item) => `- ${item.name}${formatVariant(item) ? ` ${formatVariant(item)}` : ''} x${item.qty ?? item.quantity ?? 0}`)
+    .join('\n')
+}
+
+function buildCustomerBlock(order = {}) {
+  const note = String(order.note || order.customerNote || '').trim()
+  return `👤 Nama Customer:
+${order.customerName || order.name || '-'}
+
+📱 Nomor Customer:
+${order.customerPhone || order.phone || '-'}
+
+✉️ Email Customer:
+${order.customerEmail || order.email || '-'}
+
+📝 Catatan Tambahan:
+${note || '-'}`
+}
+
+export function buildOwnerMessage(order = {}) {
+  return `🍱 PESANAN BARU AIME-Dimsum
+
+🆔 Order ID:
+${order.orderId || '-'}
+
+${buildCustomerBlock(order)}
+
+🛒 Detail Pesanan:
+
+${buildItemsText(order) || '-'}
+
+Jumlah Item:
+${getOrderItemsCount(order.items || [])}
+
+💰 Total:
+Rp ${Number(order.total || 0).toLocaleString('id-ID')}
+
+💳 Metode Pembayaran:
+${getMethodLabel(order.paymentMethod || order.method)}
+
+📌 Status:
+${getStatusLabel(order.paymentStatus || order.status)}
+
+⏰ Waktu:
+${formatOrderTime(order.createdAt || order.time)}`
 }
 
 export function buildTelegramPendingMessage(order = {}) {
-  return `🍱 PESANAN BARU AIME-Dimsum\n\n🆔 Order ID:\n${order.orderId || '-'}\n\n👤 Customer:\n${order.customerName || order.name || '-'}\n\n💰 Nominal:\nRp ${Number(order.total || 0).toLocaleString('id-ID')}\n\n💳 Metode:\n${getMethodLabel(order.paymentMethod || order.method)}\n\nStatus :\n🟡 MENUNGGU KONFIRMASI\n\nTekan tombol di bawah jika pembayaran sudah diterima.`
+  return `🍱 PESANAN BARU AIME-Dimsum
+
+🆔 Order ID:
+${order.orderId || '-'}
+
+${buildCustomerBlock(order)}
+
+💰 Nominal:
+Rp ${Number(order.total || 0).toLocaleString('id-ID')}
+
+💳 Metode:
+${getMethodLabel(order.paymentMethod || order.method)}
+
+Status :
+🟡 MENUNGGU KONFIRMASI
+
+Tekan tombol di bawah jika pembayaran sudah diterima.`
 }
 
 export function buildTelegramConfirmedMessage(order = {}) {
-  return `✅ Pembayaran berhasil dikonfirmasi\n\n━━━━━━━━━━━━━━━━━━\n\nOrder ID :\n${order.orderId || '-'}\n\nStatus :\n🟢 PAID\n\nNominal :\nRp ${Number(order.total || 0).toLocaleString('id-ID')}\n\nMetode :\n${getMethodLabel(order.paymentMethod || order.method)}\n\nWaktu Konfirmasi :\n${formatOrderTime(order.confirmedAt)}\n\nWebsite pelanggan telah diperbarui.\n\nSilakan tunggu pelanggan menekan tombol\n"Kirim Pesanan Saya".\n\n━━━━━━━━━━━━━━━━━━`
+  return `✅ Pembayaran berhasil dikonfirmasi
+
+━━━━━━━━━━━━━━━━━━
+
+Order ID :
+${order.orderId || '-'}
+
+${buildCustomerBlock(order)}
+
+Status :
+🟢 PAID
+
+Nominal :
+Rp ${Number(order.total || 0).toLocaleString('id-ID')}
+
+Metode :
+${getMethodLabel(order.paymentMethod || order.method)}
+
+Waktu Konfirmasi :
+${formatOrderTime(order.confirmedAt)}
+
+Website pelanggan telah diperbarui.
+
+Silakan tunggu pelanggan menekan tombol
+"Kirim Pesanan Saya".
+
+━━━━━━━━━━━━━━━━━━`
 }
 
 export function buildTelegramAlreadyConfirmedMessage(order = {}) {
-  return `⚠️ Order ini sudah dikonfirmasi sebelumnya.\n\nOrder ID :\n${order.orderId || '-'}\n\nStatus :\n🟢 PAID\n\nWaktu Konfirmasi :\n${formatOrderTime(order.confirmedAt)}`
+  return `⚠️ Order ini sudah dikonfirmasi sebelumnya.
+
+Order ID :
+${order.orderId || '-'}
+
+Status :
+🟢 PAID
+
+Waktu Konfirmasi :
+${formatOrderTime(order.confirmedAt)}`
 }
 
 export function buildTelegramFailedMessage() {
-  return `❌ Gagal mengkonfirmasi pembayaran.\n\nBackend tidak merespon.\n\nSilakan coba kembali.`
+  return `❌ Gagal mengkonfirmasi pembayaran.
+
+Backend tidak merespon.
+
+Silakan coba kembali.`
 }
 
 export function getWebhookBaseUrl(req) {
@@ -164,4 +268,3 @@ export async function ensureTelegramWebhook(req) {
     return { ok: false, webhookUrl, message: error.message }
   }
 }
-

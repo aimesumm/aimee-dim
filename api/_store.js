@@ -29,20 +29,6 @@ function getMissingColumn(error) {
   return null
 }
 
-function stripNullishFields(row = {}, skipKeys = []) {
-  const skip = new Set(skipKeys)
-  const next = {}
-
-  for (const [key, value] of Object.entries(row)) {
-    if (skip.has(key)) continue
-    if (value === undefined) continue
-    if (value === null) continue
-    next[key] = value
-  }
-
-  return next
-}
-
 async function retryWithMissingColumnFallback(basePayload, queryFn, options = {}) {
   const {
     label = 'SUPABASE',
@@ -88,6 +74,7 @@ function mapRow(row) {
     orderId: String(row.order_id ?? row.orderId ?? ''),
     customerName: row.customer_name ?? row.customerName ?? '',
     customerPhone: row.customer_phone ?? row.customerPhone ?? '',
+    customerEmail: row.customer_email ?? row.customerEmail ?? '',
     note: row.note ?? '',
     items: Array.isArray(row.items) ? clone(row.items) : [],
     itemCount: toNumber(row.item_count ?? row.itemCount, 0),
@@ -105,6 +92,7 @@ function mapRow(row) {
 
   order.name = order.customerName
   order.phone = order.customerPhone
+  order.email = order.customerEmail
   order.method = order.paymentMethod
   order.time = order.createdAt
 
@@ -116,6 +104,7 @@ function buildOrderRow(order = {}) {
     order_id: String(order.orderId || ''),
     customer_name: order.customerName || order.name || '',
     customer_phone: order.customerPhone || order.phone || '',
+    customer_email: order.customerEmail || order.email || '',
     note: order.note || '',
     items: Array.isArray(order.items) ? clone(order.items) : [],
     item_count: toNumber(order.itemCount, 0),
@@ -147,6 +136,7 @@ function toDbPatch(patch = {}) {
 
   if (patch.customerName !== undefined || patch.name !== undefined) next.customer_name = patch.customerName ?? patch.name ?? ''
   if (patch.customerPhone !== undefined || patch.phone !== undefined) next.customer_phone = patch.customerPhone ?? patch.phone ?? ''
+  if (patch.customerEmail !== undefined || patch.email !== undefined) next.customer_email = patch.customerEmail ?? patch.email ?? ''
   if (patch.note !== undefined) next.note = patch.note ?? ''
   if (patch.items !== undefined) next.items = Array.isArray(patch.items) ? clone(patch.items) : []
   if (patch.itemCount !== undefined) next.item_count = toNumber(patch.itemCount, 0)
