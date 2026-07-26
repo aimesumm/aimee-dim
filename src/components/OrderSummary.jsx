@@ -18,8 +18,10 @@ export default function OrderSummary({ order, cart = [] }) {
       </div>
 
       <div className="summary-stack">
-        <div className="summary-row"><span>Nama customer</span><strong>{order?.name || '-'}</strong></div>
-        <div className="summary-row"><span>Nomor customer</span><strong>{order?.phone || '-'}</strong></div>
+        <div className="summary-row"><span>Nama customer</span><strong>{order?.name || order?.customerName || '-'}</strong></div>
+        <div className="summary-row"><span>Nomor customer</span><strong>{order?.phone || order?.customerPhone || '-'}</strong></div>
+        <div className="summary-row"><span>Email customer</span><strong>{order?.email || order?.customerEmail || '-'}</strong></div>
+        <div className="summary-row"><span>Catatan</span><strong>{order?.note || order?.customerNote || '-'}</strong></div>
         <div className="summary-row"><span>Metode pembayaran</span><strong>{order ? getMethodLabel(order.method) : '-'}</strong></div>
         <div className="summary-row"><span>Jumlah item</span><strong>{getOrderItemsCount(items)}</strong></div>
         <div className="summary-row"><span>Waktu</span><strong>{formatOrderTime(order?.time)}</strong></div>
