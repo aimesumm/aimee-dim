@@ -1,5 +1,5 @@
 
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { categories } from '../data/siteConfig'
 import { useCart } from '../context/CartContext'
@@ -14,44 +14,6 @@ export default function MenuSection() {
   const { items, loading } = useMenu()
   const { isAdmin } = useAdminAuth()
   const navigate = useNavigate()
-
-  // Drag-to-scroll untuk baris kategori (khusus mouse di desktop).
-  // Ini murni interaksi UI, tidak menyentuh logic filter kategori.
-  const tabsScrollRef = useRef(null)
-  const dragInfo = useRef({ isDragging: false, startX: 0, startScrollLeft: 0, moved: false })
-
-  const handleTabsMouseDown = (e) => {
-    const el = tabsScrollRef.current
-    if (!el) return
-    dragInfo.current = {
-      isDragging: true,
-      startX: e.pageX,
-      startScrollLeft: el.scrollLeft,
-      moved: false,
-    }
-  }
-
-  const handleTabsMouseMove = (e) => {
-    const el = tabsScrollRef.current
-    if (!el || !dragInfo.current.isDragging) return
-    const delta = e.pageX - dragInfo.current.startX
-    if (Math.abs(delta) > 3) dragInfo.current.moved = true
-    el.scrollLeft = dragInfo.current.startScrollLeft - delta
-  }
-
-  const stopTabsDrag = () => {
-    dragInfo.current.isDragging = false
-  }
-
-  const handleTabClick = (cat) => (e) => {
-    // Cegah klik kategori tidak sengaja setelah drag mouse.
-    if (dragInfo.current.moved) {
-      e.preventDefault()
-      dragInfo.current.moved = false
-      return
-    }
-    setActiveCategory(cat)
-  }
 
   const filtered = useMemo(() => {
     return activeCategory === 'Semua'
@@ -79,7 +41,7 @@ export default function MenuSection() {
 
   return (
     <section className="menu-section" id="menu">
-      <div className="section-head">
+      <div className="section-head menu-section-head">
         <div>
           <p className="eyebrow">Menu utama</p>
           <h2>Pilihan makanan, minuman, paket, dan lainnya AIME-Dimsum</h2>
@@ -87,20 +49,13 @@ export default function MenuSection() {
         </div>
       </div>
 
-      <div className="category-tabs-card">
-        <div
-          className="tabs scrollable"
-          ref={tabsScrollRef}
-          onMouseDown={handleTabsMouseDown}
-          onMouseMove={handleTabsMouseMove}
-          onMouseUp={stopTabsDrag}
-          onMouseLeave={stopTabsDrag}
-        >
+      <div className="category-scroll-card glass-card">
+        <div className="tabs scrollable category-tabs" role="tablist" aria-label="Kategori menu">
           {categories.map((cat) => (
             <button
               key={cat}
               className={activeCategory === cat ? 'tab active' : 'tab'}
-              onClick={handleTabClick(cat)}
+              onClick={() => setActiveCategory(cat)}
               type="button"
             >
               {cat}
