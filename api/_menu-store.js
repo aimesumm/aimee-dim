@@ -170,26 +170,48 @@ export async function listMenuItems() {
 export async function createMenuItem(item = {}) {
   const row = buildRow(item)
 
-  try {
-    const result = await querySupabase((supabase) =>
+  const buildInsertPayload = (dropColumns = []) => {
+    const dropSet = new Set(dropColumns)
+    const payload = {
+      name: row.name,
+      category: row.category,
+      price: row.price,
+      image_url: row.image_url,
+      image_path: row.image_path,
+      badge: row.badge,
+      description: row.description,
+      has_variant: row.has_variant,
+      variants: row.variants,
+      sort_order: row.sort_order,
+      updated_at: row.updated_at,
+    }
+
+    for (const key of dropSet) {
+      delete payload[key]
+    }
+
+    return payload
+  }
+
+  const insertOnce = async (payload) => {
+    return querySupabase((supabase) =>
       supabase
         .from(MENU_TABLE)
-        .insert({
-          name: row.name,
-          category: row.category,
-          price: row.price,
-          image_url: row.image_url,
-          image_path: row.image_path,
-          badge: row.badge,
-          description: row.description,
-          has_variant: row.has_variant,
-          variants: row.variants,
-          sort_order: row.sort_order,
-          updated_at: row.updated_at,
-        })
+        .insert(payload)
         .select('*')
         .single(),
     )
+  }
+
+  try {
+    let result = await insertOnce(buildInsertPayload())
+
+    if (result.error) {
+      const missingColumn = getMissingColumn(result.error)
+      if (missingColumn && missingColumn in buildInsertPayload()) {
+        result = await insertOnce(buildInsertPayload([missingColumn]))
+      }
+    }
 
     if (result.error) {
       throw result.error
@@ -218,6 +240,15 @@ export async function updateMenuItem(id, patch = {}) {
   const resolvedId = String(id || '').trim()
   if (!resolvedId) throw new Error('Menu item id is required')
 
+  const buildUpdatePayload = (existing, dropColumns = []) => {
+    const dropSet = new Set(dropColumns)
+    const payload = buildRow(patch, existing)
+    for (const key of dropSet) {
+      delete payload[key]
+    }
+    return payload
+  }
+
   try {
     const supabase = await getSupabaseClient()
     if (!supabase) {
@@ -238,14 +269,28 @@ export async function updateMenuItem(id, patch = {}) {
       return null
     }
 
-    const merged = buildRow(patch, existing)
-
-    const { data, error } = await supabase
+    let merged = buildUpdatePayload(existing)
+    let { data, error } = await supabase
       .from(MENU_TABLE)
       .update(merged)
       .eq('id', resolvedId)
       .select('*')
       .maybeSingle()
+
+    if (error) {
+      const missingColumn = getMissingColumn(error)
+      if (missingColumn && missingColumn in merged) {
+        merged = buildUpdatePayload(existing, [missingColumn])
+        const retry = await supabase
+          .from(MENU_TABLE)
+          .update(merged)
+          .eq('id', resolvedId)
+          .select('*')
+          .maybeSingle()
+        data = retry.data
+        error = retry.error
+      }
+    }
 
     if (error) {
       throw error
