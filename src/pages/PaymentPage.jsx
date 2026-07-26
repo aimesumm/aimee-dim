@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import CustomerDetailsCard from '../components/CustomerDetailsCard'
 import PaymentStatusCard from '../components/PaymentStatusCard'
 import PaymentMethodPicker from '../components/PaymentMethodPicker'
-import { checkPayment, createQris, getOrderStatus } from '../services/paymentGateway'
+import { checkPayment, createOrder, createQris, getOrderStatus } from '../services/paymentGateway'
 import { currency, getStatusLabel } from '../data/siteConfig'
+import { useCart } from '../context/CartContext'
+import { useOrderDraft } from '../context/OrderDraftContext'
 import { supabaseBrowser } from '../lib/supabaseClient'
 import { normalizeOrder, readLastOrder, writeLastOrder } from '../lib/orderHelpers'
 
@@ -22,24 +25,29 @@ export default function PaymentPage() {
   const { method: routeMethod, orderId } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
+  const { cart, clearCart } = useCart()
+  const { customer, preferredMethod, setPreferredMethod } = useOrderDraft()
 
   const initialOrder = useMemo(() => {
     const stateOrder = location.state?.order || readLastOrder()
+    if (!orderId) return null
     if (stateOrder?.orderId && String(stateOrder.orderId) === String(orderId)) return normalizeOrder(stateOrder)
     return null
   }, [location.state, orderId])
 
+  const draftMode = !orderId
   const [order, setOrder] = useState(() => initialOrder || null)
   const [bootstrapping, setBootstrapping] = useState(Boolean(orderId && !initialOrder))
   const [bootstrapError, setBootstrapError] = useState('')
   const [checking, setChecking] = useState(false)
   const [generating, setGenerating] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [now, setNow] = useState(Date.now())
   const [checkAttempts, setCheckAttempts] = useState(0)
   const [lastCheckedStatus, setLastCheckedStatus] = useState(String(initialOrder?.paymentStatus || initialOrder?.status || 'pending').toLowerCase())
   const [qrisSnapshot, setQrisSnapshot] = useState(() => initialOrder?.qris || null)
-  const [selectedMethod, setSelectedMethod] = useState(() => String(routeMethod || initialOrder?.paymentMethod || initialOrder?.method || 'QRIS').toUpperCase())
+  const [selectedMethod, setSelectedMethod] = useState(() => String(routeMethod || initialOrder?.paymentMethod || initialOrder?.method || preferredMethod || 'QRIS').toUpperCase())
 
   const stableQrisRef = useRef(initialOrder?.qris || null)
 
@@ -58,7 +66,7 @@ export default function PaymentPage() {
   }
 
   useEffect(() => {
-    setSelectedMethod(String(routeMethod || order?.paymentMethod || order?.method || selectedMethod || 'QRIS').toUpperCase())
+    setSelectedMethod(String(routeMethod || order?.paymentMethod || order?.method || selectedMethod || preferredMethod || 'QRIS').toUpperCase())
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [routeMethod, order?.orderId])
 
@@ -68,10 +76,18 @@ export default function PaymentPage() {
   }, [])
 
   useEffect(() => {
-    if (!order && !orderId) {
+    if (draftMode) return
+    if (!orderId || bootstrapping) return
+    if (!order) {
       navigate('/order', { replace: true })
     }
-  }, [order, orderId, navigate])
+  }, [draftMode, order, orderId, bootstrapping, navigate])
+
+  useEffect(() => {
+    if (draftMode && !cart.length) {
+      navigate('/order', { replace: true })
+    }
+  }, [draftMode, cart.length, navigate])
 
   useEffect(() => {
     let cancelled = false
@@ -86,7 +102,7 @@ export default function PaymentPage() {
           setOrder(normalized)
           setLastCheckedStatus(status)
           writeLastOrder(normalized)
-          setSelectedMethod(String(normalized.paymentMethod || normalized.method || routeMethod || 'QRIS').toUpperCase())
+          setSelectedMethod(String(normalized.paymentMethod || normalized.method || routeMethod || preferredMethod || 'QRIS').toUpperCase())
           if (status !== 'pending') {
             navigate(`/success/${String(normalized.paymentMethod || normalized.method || routeMethod || 'qris').toLowerCase()}/${normalized.orderId}`, { replace: true, state: { order: normalized } })
           }
@@ -102,7 +118,7 @@ export default function PaymentPage() {
     return () => {
       cancelled = true
     }
-  }, [order, orderId])
+  }, [order, orderId, navigate, routeMethod, preferredMethod])
 
   useEffect(() => {
     if (!order?.orderId || String(order.paymentStatus || order.status || '').toLowerCase() === 'completed') return
@@ -196,6 +212,78 @@ export default function PaymentPage() {
     ensureQris()
   }, [order?.orderId, routeMethod, selectedMethod])
 
+  const submitDraftPayment = async () => {
+    if (!cart.length) {
+      setError('Keranjang masih kosong.')
+      return
+    }
+
+    if (!customer.name.trim() || !customer.phone.trim() || !customer.email.trim()) {
+      setError('Isi nama, nomor WhatsApp, dan email pelanggan terlebih dahulu.')
+      return
+    }
+
+    setSubmitting(true)
+    setError('')
+    setPreferredMethod(selectedMethod)
+
+    try {
+      const items = cart.map((item) => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        basePrice: item.basePrice ?? item.price,
+        variantPrice: item.variantPrice ?? 0,
+        qty: item.qty,
+        category: item.category,
+        variant: item.variant,
+        variantLabel: item.variantLabel,
+      }))
+
+      const subtotal = items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0), 0)
+      const payload = {
+        customerName: customer.name.trim(),
+        customerPhone: customer.phone.trim(),
+        customerEmail: customer.email.trim(),
+        note: customer.note.trim(),
+        items,
+        itemCount: items.reduce((sum, item) => sum + Number(item.qty || 0), 0),
+        subtotal,
+        total: subtotal,
+        paymentMethod: selectedMethod,
+      }
+
+      const created = await createOrder(payload)
+      let nextOrder = normalizeOrder(created)
+
+      if (selectedMethod === 'QRIS') {
+        try {
+          const qris = await createQris({
+            orderId: created.orderId,
+            total: created.total,
+          })
+          nextOrder = normalizeOrder({
+            ...created,
+            qris,
+          }, created)
+        } catch {
+          // user can retry on status page
+        }
+      }
+
+      writeLastOrder(nextOrder)
+      clearCart()
+      navigate(`/payment/${String(selectedMethod || 'QRIS').toLowerCase()}/${created.orderId}`, {
+        replace: true,
+        state: { order: nextOrder },
+      })
+    } catch (err) {
+      setError(err.message || 'Checkout gagal.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   const goSuccess = (payload) => {
     const method = String(payload.paymentMethod || payload.method || routeMethod || 'qris').toLowerCase()
     navigate(`/success/${method}/${payload.orderId}`, { replace: true, state: { order: payload } })
@@ -255,10 +343,27 @@ export default function PaymentPage() {
     }
   }
 
-  const handleCompletePayment = () => {
-    if (!order?.orderId) return
-    const method = String(selectedMethod || routeMethod || 'QRIS').toLowerCase()
-    navigate(`/payment/${method}/${order.orderId}`, { replace: true, state: { order } })
+  if (draftMode) {
+    return (
+      <div className="app-shell">
+        <main className="container payment-gateway-page payment-draft-page">
+          <CustomerDetailsCard
+            hideNote
+            title="Isi data customer"
+            copy="Nama, nomor WhatsApp, dan email akan dikirim ke backend sebelum admin mengonfirmasi pesanan."
+          />
+
+          <PaymentMethodPicker
+            value={selectedMethod}
+            onChange={setSelectedMethod}
+            onContinue={submitDraftPayment}
+            loading={submitting}
+          />
+
+          {error ? <div className="notice error">{error}</div> : null}
+        </main>
+      </div>
+    )
   }
 
   if (bootstrapping && !order?.orderId) {
@@ -299,18 +404,6 @@ export default function PaymentPage() {
   return (
     <div className="app-shell">
       <main className="container payment-gateway-page">
-        <PaymentMethodPicker
-          value={selectedMethod}
-          onChange={setSelectedMethod}
-          onContinue={handleCompletePayment}
-          loading={checking || generating}
-          customer={{
-            name: order.customerName || order.name || '',
-            phone: order.customerPhone || order.phone || '',
-            email: order.customerEmail || order.email || '',
-          }}
-        />
-
         <PaymentStatusCard
           order={order}
           variant={isQris ? 'qris' : 'cash'}

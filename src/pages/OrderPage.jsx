@@ -1,21 +1,17 @@
 import { useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import CustomerDetailsCard from '../components/CustomerDetailsCard'
 import { useCart } from '../context/CartContext'
 import { useOrderDraft } from '../context/OrderDraftContext'
 import { useMenu } from '../context/MenuContext'
-import { createOrder, createQris } from '../services/paymentGateway'
 import {
   currency,
   formatItemVariant,
   getBaseSubtotal,
-  getOrderItemsCount,
   getSubtotal,
   getVariantSubtotal,
 } from '../data/siteConfig'
 import { MENU_PLACEHOLDER_IMAGE } from '../data/menuItems'
-import { normalizeOrder, writeLastOrder } from '../lib/orderHelpers'
 
 function RelatedIcon() {
   return (
@@ -37,31 +33,16 @@ function EditIcon() {
 export default function OrderPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { cart, clearCart, updateQty, addItem } = useCart()
-  const { customer, preferredMethod, setPreferredMethod } = useOrderDraft()
+  const { cart, updateQty, addItem } = useCart()
+  const { customer, setCustomer, preferredMethod, setPreferredMethod } = useOrderDraft()
   const { items: menuItems, loading: menuLoading } = useMenu()
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   const subtotal = useMemo(() => getSubtotal(cart), [cart])
   const menuSubtotal = useMemo(() => getBaseSubtotal(cart), [cart])
   const variantSubtotal = useMemo(() => getVariantSubtotal(cart), [cart])
   const total = subtotal
-  const itemCount = getOrderItemsCount(cart)
-
   const selectedMethod = String(location.state?.method || preferredMethod || 'QRIS').toUpperCase()
-
-  const buildItems = () => cart.map((item) => ({
-    id: item.id,
-    name: item.name,
-    price: item.price,
-    basePrice: item.basePrice ?? item.price,
-    variantPrice: item.variantPrice ?? 0,
-    qty: item.qty,
-    category: item.category,
-    variant: item.variant,
-    variantLabel: item.variantLabel,
-  }))
 
   const handleRelatedAdd = (item) => {
     if (item.hasVariantPage) {
@@ -83,74 +64,16 @@ export default function OrderPage() {
     })
   }
 
-  const handleContinue = async () => {
+  const handleContinue = () => {
     setError('')
+
     if (!cart.length) {
       setError('Keranjang masih kosong.')
       return
     }
 
-    if (!customer.name.trim() || !customer.phone.trim() || !customer.email.trim()) {
-      setError('Isi nama, nomor WhatsApp, dan email pelanggan terlebih dahulu.')
-      return
-    }
-
-    setLoading(true)
     setPreferredMethod(selectedMethod)
-
-    try {
-      const payload = {
-        customerName: customer.name.trim(),
-        customerPhone: customer.phone.trim(),
-        customerEmail: customer.email.trim(),
-        note: customer.note.trim(),
-        items: buildItems(),
-        itemCount,
-        subtotal,
-        total,
-        paymentMethod: selectedMethod,
-      }
-
-      const created = await createOrder(payload)
-      const normalizedCreated = normalizeOrder(created)
-
-      if (selectedMethod === 'QRIS') {
-        let nextOrder = normalizedCreated
-
-        try {
-          const qris = await createQris({
-            orderId: created.orderId,
-            total: created.total,
-          })
-
-          nextOrder = normalizeOrder({
-            ...created,
-            qris,
-          }, created)
-        } catch {
-          // tetap lanjut ke halaman QRIS agar user bisa retry di sana
-        }
-
-        writeLastOrder(nextOrder)
-        clearCart()
-        navigate(`/payment/qris/${created.orderId}`, {
-          replace: true,
-          state: { order: nextOrder },
-        })
-        return
-      }
-
-      writeLastOrder(normalizedCreated)
-      clearCart()
-      navigate(`/payment/cash/${created.orderId}`, {
-        replace: true,
-        state: { order: normalizedCreated },
-      })
-    } catch (err) {
-      setError(err.message || 'Checkout gagal.')
-    } finally {
-      setLoading(false)
-    }
+    navigate('/payment', { state: { method: selectedMethod } })
   }
 
   return (
@@ -166,16 +89,6 @@ export default function OrderPage() {
             <p className="eyebrow">Order</p>
             <h1>Pesanan yang sudah dipilih</h1>
             <p className="hero-text">Edit jumlah item di sini, tambahkan menu lain dari panel kanan, lalu lanjutkan ke payment.</p>
-          </div>
-          <div className="checkout-meta">
-            <div className="meta-box">
-              <span>Total item</span>
-              <strong>{itemCount}</strong>
-            </div>
-            <div className="meta-box">
-              <span>Total semua</span>
-              <strong>{currency.format(total)}</strong>
-            </div>
           </div>
         </motion.section>
 
@@ -200,7 +113,6 @@ export default function OrderPage() {
               ) : (
                 <div className="order-scroll order-scroll-list" role="list" aria-label="Daftar pesanan">
                   {cart.map((item) => {
-                    const lineTotal = Number(item.price || 0) * Number(item.qty || 0)
                     const variantLabel = formatItemVariant(item)
                     return (
                       <motion.article
@@ -236,13 +148,31 @@ export default function OrderPage() {
                           >
                             <EditIcon />
                           </button>
-                          <strong className="order-line-total">{currency.format(lineTotal)}</strong>
                         </div>
                       </motion.article>
                     )
                   })}
                 </div>
               )}
+            </section>
+
+            <section className="order-note-card glass-card">
+              <div className="section-head compact">
+                <div>
+                  <p className="eyebrow">Add another notes</p>
+                  <h2>Catatan tambahan</h2>
+                </div>
+              </div>
+
+              <label className="field field-full">
+                <span>Catatan untuk admin</span>
+                <textarea
+                  value={customer.note}
+                  onChange={(event) => setCustomer((prev) => ({ ...prev, note: event.target.value }))}
+                  placeholder="Tambahkan catatan untuk pesanan ini"
+                  rows={3}
+                />
+              </label>
             </section>
 
             <section className="payment-detail-card glass-card">
@@ -260,10 +190,8 @@ export default function OrderPage() {
               </div>
             </section>
 
-            <CustomerDetailsCard />
-
-            <button className="primary-btn order-continue-btn" type="button" onClick={handleContinue} disabled={loading}>
-              {loading ? 'Memproses...' : 'Continue to payment'}
+            <button className="primary-btn order-continue-btn" type="button" onClick={handleContinue}>
+              Continue to payment
             </button>
 
             {error ? <div className="notice error">{error}</div> : null}

@@ -75,8 +75,6 @@ export default function MenuPage() {
           <span>Checkout</span>
           <strong>{currency.format(total)}</strong>
         </span>
-
-        <span className="floating-checkout-action">Continue</span>
       </motion.button>
 
       <Footer />
