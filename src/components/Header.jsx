@@ -1,25 +1,63 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 
+function BackIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M15 18l-6-6 6-6" />
+    </svg>
+  )
+}
+
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="M16 16l4 4" />
+    </svg>
+  )
+}
+
+function MenuIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M5 7h14" />
+      <path d="M5 12h14" />
+      <path d="M5 17h14" />
+    </svg>
+  )
+}
+
 export default function Header({ onGoMenu }) {
   const navigate = useNavigate()
 
   return (
-    <header className="topbar glass-card">
-      <div className="brand-block">
-        <div className="brand">Aime Dimsum</div>
-        <div className="subtitle">Maroon menu • QRIS • Tunai</div>
+    <header className="topbar menu-topbar glass-card">
+      <button
+        className="icon-btn header-back-btn"
+        type="button"
+        onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}
+        aria-label="Kembali"
+      >
+        <BackIcon />
+      </button>
+
+      <div className="header-title-wrap">
+        <p className="header-kicker">Menu</p>
+        <h1 className="header-title">LAPAK - AIME</h1>
       </div>
 
-      <div className="topbar-actions">
-        <button className="chip-btn" onClick={onGoMenu} type="button">Menu</button>
+      <div className="topbar-actions header-actions">
+        <button className="icon-btn header-search-btn" type="button" aria-label="Search">
+          <SearchIcon />
+        </button>
         <button
-          className="icon-btn kebab-btn"
+          className="icon-btn header-profile-btn"
           type="button"
           onClick={() => navigate('/profile')}
           aria-label="Buka halaman profile"
         >
-          ⋮
+          <MenuIcon />
         </button>
       </div>
     </header>

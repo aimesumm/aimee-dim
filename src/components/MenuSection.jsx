@@ -1,5 +1,4 @@
-
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { categories } from '../data/siteConfig'
 import { useCart } from '../context/CartContext'
@@ -8,12 +7,48 @@ import { useAdminAuth } from '../context/AdminAuthContext'
 import MenuCard from './MenuCard'
 import AddMenuCard from './AddMenuCard'
 
+function uniqCategoryList(items) {
+  const ordered = ['Semua']
+  const base = Array.isArray(categories) ? categories : []
+  const raw = [...base, ...items.map((item) => item.category)]
+  const seen = new Set()
+
+  for (const cat of raw) {
+    const label = String(cat || '').trim()
+    if (!label) continue
+    const key = label.toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    ordered.push(label)
+  }
+
+  return ordered
+}
+
 export default function MenuSection() {
   const [activeCategory, setActiveCategory] = useState('Semua')
   const { addItem } = useCart()
   const { items, loading } = useMenu()
   const { isAdmin } = useAdminAuth()
   const navigate = useNavigate()
+  const tabRefs = useRef(new Map())
+
+  const categoryList = useMemo(() => uniqCategoryList(items), [items])
+
+  useEffect(() => {
+    if (!categoryList.includes(activeCategory)) {
+      setActiveCategory(categoryList[0] || 'Semua')
+    }
+  }, [activeCategory, categoryList])
+
+  useEffect(() => {
+    const node = tabRefs.current.get(activeCategory)
+    if (node) {
+      window.requestAnimationFrame(() => {
+        node.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+      })
+    }
+  }, [activeCategory])
 
   const filtered = useMemo(() => {
     return activeCategory === 'Semua'
@@ -41,19 +76,40 @@ export default function MenuSection() {
 
   return (
     <section className="menu-section" id="menu">
-      <div className="section-head">
-        <div>
-          <p className="eyebrow">Menu utama</p>
-          <h2>Pilihan makanan, minuman, paket, dan lainnya AIME-Dimsum</h2>
-          <p className="section-copy">Pilih menu favoritmu, tambahkan ke keranjang, dan pesan dengan mudah.</p>
+      <div className="menu-section-head">
+        <div className="menu-section-copy">
+          <p className="eyebrow">Pilih kategori</p>
+          <h2>Geser kategori untuk melihat menu</h2>
         </div>
-        <div className="tabs scrollable">
-          {categories.map((cat) => (
+
+        <div className="menu-active-chip" aria-live="polite">
+          <span>Kategori aktif</span>
+          <strong>{activeCategory}</strong>
+        </div>
+      </div>
+
+      <div className="category-toolbar glass-card">
+        <div className="category-toolbar-hint">
+          <span className="category-toolbar-dot" aria-hidden="true" />
+          <span>Swipe hanya di area kategori</span>
+        </div>
+
+        <div className="tabs scrollable menu-tabs" role="tablist" aria-label="Kategori menu">
+          {categoryList.map((cat) => (
             <button
               key={cat}
+              ref={(node) => {
+                if (node) {
+                  tabRefs.current.set(cat, node)
+                } else {
+                  tabRefs.current.delete(cat)
+                }
+              }}
               className={activeCategory === cat ? 'tab active' : 'tab'}
               onClick={() => setActiveCategory(cat)}
               type="button"
+              role="tab"
+              aria-selected={activeCategory === cat}
             >
               {cat}
             </button>
@@ -61,19 +117,21 @@ export default function MenuSection() {
         </div>
       </div>
 
-      <div className="menu-grid-v2">
-        {filtered.map((item, index) => (
-          <MenuCard key={item.id} item={item} index={index} onAdd={handleAdd} />
-        ))}
+      <div className="menu-results">
+        <div className="menu-grid-v2">
+          {filtered.map((item, index) => (
+            <MenuCard key={item.id} item={item} index={index} onAdd={handleAdd} />
+          ))}
 
-        {isAdmin ? (
-          <AddMenuCard index={filtered.length} onClick={() => navigate('/admin/menu/new')} />
+          {isAdmin ? (
+            <AddMenuCard index={filtered.length} onClick={() => navigate('/admin/menu/new')} />
+          ) : null}
+        </div>
+
+        {!loading && !filtered.length && !isAdmin ? (
+          <p className="section-copy menu-empty-state">Menu belum tersedia saat ini. Silakan cek kembali sebentar lagi.</p>
         ) : null}
       </div>
-
-      {!loading && !filtered.length && !isAdmin ? (
-        <p className="section-copy">Menu belum tersedia saat ini. Silakan cek kembali sebentar lagi.</p>
-      ) : null}
     </section>
   )
 }
