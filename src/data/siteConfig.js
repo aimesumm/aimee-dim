@@ -1,5 +1,5 @@
 
-export const menuCategories = ['Semua', 'Makanan', 'Minuman', 'Lainnya', 'Paket']
+export const menuCategories = ['Semua', 'Paket', 'Makanan', 'Minuman', 'Lainnya']
 
 export const categories = menuCategories
 
@@ -117,8 +117,17 @@ export function getSubtotal(items = []) {
 }
 
 export function formatItemVariant(item = {}) {
-  const variant = String(item.variant || item.variantLabel || '').trim()
+  const variantLabel = String(item.variantLabel || item.variant_name || '').trim()
+  if (variantLabel) return `(${variantLabel})`
+
+  const variant = String(item.variant || '').trim()
   if (!variant) return ''
+
+  const looksLikeBackendKey =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?:-variant-\d+)?$/i.test(variant) ||
+    /-variant-\d+$/i.test(variant)
+
+  if (looksLikeBackendKey) return ''
   return `(${variant})`
 }
 
