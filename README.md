@@ -85,6 +85,12 @@ Catatan:
 5. Jalankan project dengan `npm install` lalu `npm run dev`.
 6. Jika deploy ke Vercel atau server lain, masukkan env yang sama ke dashboard hosting.
 
+### Catatan tentang folder `api/` saat development lokal
+
+`vite.config.js` sudah dilengkapi shim kecil (`vercel-api-dev-shim`) yang menjalankan file-file di `api/` langsung di dalam proses `vite dev`, jadi `npm run dev` saja sudah cukup untuk menjalankan flow checkout → order → QRIS/Telegram → status secara end-to-end di localhost, tanpa perlu Vercel CLI. Route dinamis seperti `api/orders/[orderId]/status.js` juga sudah didukung.
+
+Kalau ingin environment yang paling mendekati produksi Vercel (termasuk cron/webhook config di `vercel.json`), tetap boleh pakai `vercel dev` sebagai alternatif — cukup jalankan `npx vercel dev` sebagai pengganti `npm run dev`.
+
 ## Supabase table
 
 Pastikan tabel `orders` memiliki kolom minimal:
