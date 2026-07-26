@@ -84,8 +84,7 @@ export default function MenuSection() {
       </div>
 
       <div className="category-toolbar glass-card">
-        <div className="menu-active-chip menu-active-chip-inline" aria-live="polite">
-          <span>Kategori aktif</span>
+        <div className="menu-active-chip menu-active-chip-inline" aria-live="polite" title={activeCategory}>
           <strong>{activeCategory}</strong>
         </div>
 
@@ -107,7 +106,7 @@ export default function MenuSection() {
                 role="tab"
                 aria-selected={activeCategory === cat}
               >
-                {cat}
+                <span className="tab-label">{cat}</span>
               </button>
             ))}
           </div>
