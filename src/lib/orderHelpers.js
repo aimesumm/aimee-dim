@@ -33,12 +33,18 @@ export function normalizeOrder(payload, fallback = null) {
     method: payload.paymentMethod || payload.method || fallback?.method || 'QRIS',
     customerName: payload.customerName || payload.name || fallback?.customerName || fallback?.name || '',
     name: payload.customerName || payload.name || fallback?.name || fallback?.customerName || '',
-    customerPhone: payload.customerPhone || payload.phone || fallback?.customerPhone || fallback?.phone || '',
-    phone: payload.customerPhone || payload.phone || fallback?.phone || fallback?.customerPhone || '',
-    customerEmail: payload.customerEmail || payload.email || fallback?.customerEmail || fallback?.email || '',
-    email: payload.customerEmail || payload.email || fallback?.email || fallback?.customerEmail || '',
-    note: payload.note || payload.customerNote || fallback?.note || fallback?.customerNote || '',
-    customerNote: payload.customerNote || payload.note || fallback?.customerNote || fallback?.note || '',
+    customerPhone:
+      payload.customerPhone || payload.customer_phone || payload.phone || payload.whatsapp || fallback?.customerPhone || fallback?.customer_phone || fallback?.phone || '',
+    phone:
+      payload.customerPhone || payload.customer_phone || payload.phone || payload.whatsapp || fallback?.phone || fallback?.customerPhone || fallback?.customer_phone || '',
+    customerEmail:
+      payload.customerEmail || payload.customer_email || payload.email || fallback?.customerEmail || fallback?.customer_email || fallback?.email || '',
+    email:
+      payload.customerEmail || payload.customer_email || payload.email || fallback?.email || fallback?.customerEmail || fallback?.customer_email || '',
+    note:
+      payload.note || payload.customerNote || payload.customer_note || fallback?.note || fallback?.customerNote || fallback?.customer_note || '',
+    customerNote:
+      payload.customerNote || payload.customer_note || payload.note || fallback?.customerNote || fallback?.customer_note || fallback?.note || ''
     createdAt: payload.createdAt || payload.time || fallback?.createdAt || fallback?.time || new Date().toISOString(),
     time: payload.createdAt || payload.time || fallback?.time || new Date().toISOString(),
   }
