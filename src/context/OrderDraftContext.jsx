@@ -28,6 +28,7 @@ export function OrderDraftProvider({ children }) {
   const [customer, setCustomer] = useState(() => readJson(STORAGE_KEY, {
     name: '',
     phone: '',
+    email: '',
     note: '',
   }))
   const [preferredMethod, setPreferredMethod] = useState(() => {
