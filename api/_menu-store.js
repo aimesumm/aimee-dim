@@ -20,6 +20,22 @@ function toNumber(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback
 }
 
+const MENU_CATEGORIES = ['Makanan', 'Minuman', 'Lainnya', 'Paket']
+
+function normalizeCategory(value) {
+  const raw = String(value || '').trim()
+  const title = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase()
+  if (MENU_CATEGORIES.includes(title)) return title
+  if (title === 'Dimsum') return 'Makanan'
+  return 'Makanan'
+}
+
+function slugifyCategory(value) {
+  const normalized = normalizeCategory(value)
+  return normalized.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'makanan'
+}
+
+
 function getMissingColumn(error) {
   const message = String(error?.message || '')
   const match = message.match(/could not find the '([^']+)' column/i)
@@ -70,7 +86,7 @@ function mapRow(row) {
   return {
     id: row.id,
     name: row.name || '',
-    category: row.category || 'Makanan',
+    category: normalizeCategory(row.category),
     price: toNumber(row.price, 0),
     imageUrl: row.image_url || MENU_PLACEHOLDER_IMAGE,
     imagePath: row.image_path || null,
@@ -91,7 +107,7 @@ function buildRow(item = {}, existing = null) {
 
   return {
     name: String(item.name ?? existing?.name ?? '').trim(),
-    category: item.category === 'Minuman' || existing?.category === 'Minuman' ? 'Minuman' : 'Makanan',
+    category: normalizeCategory(item.category ?? existing?.category),
     price: toNumber(item.price ?? existing?.price, 0),
     image_url: item.imageUrl ?? existing?.image_url ?? existing?.imageUrl ?? MENU_PLACEHOLDER_IMAGE,
     image_path: item.imagePath !== undefined ? (item.imagePath || null) : (existing?.image_path ?? existing?.imagePath ?? null),
@@ -361,11 +377,11 @@ export async function deleteMenuItem(id) {
 const MENU_IMAGE_BUCKET = 'menu-images'
 
 function getCategoryFolder(category) {
-  return String(category || '').trim().toLowerCase() === 'minuman' ? 'minuman' : 'makanan'
+  return slugifyCategory(category)
 }
 
 // Uploads a base64-encoded image to the `menu-images` bucket under a
-// makanan/ or minuman/ folder, using a unique (UUID + timestamp) filename.
+// category/ folder, using a unique (UUID + timestamp) filename.
 // Returns { url, path } where `path` is the storage object path (to be
 // stored in `image_path`) and `url` is the public URL (to be stored in
 // `image_url`). Returns null if no base64 image was provided.
