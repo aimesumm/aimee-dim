@@ -21,6 +21,27 @@ export default function MenuSection() {
       : items.filter((item) => item.category === activeCategory)
   }, [activeCategory, items])
 
+  // Saat kategori "Semua" aktif, kelompokkan menu per kategori. Tiap
+  // kategori tampil sebagai card sendiri dengan scroll horizontal, agar
+  // halaman tidak memanjang ke bawah hanya karena banyak kategori.
+  const groupedByCategory = useMemo(() => {
+    if (activeCategory !== 'Semua') return []
+
+    const map = new Map()
+    items.forEach((item) => {
+      const cat = item.category || 'Lainnya'
+      if (!map.has(cat)) map.set(cat, [])
+      map.get(cat).push(item)
+    })
+
+    const orderedCats = categories.filter((cat) => cat !== 'Semua' && map.has(cat))
+    map.forEach((_, cat) => {
+      if (!orderedCats.includes(cat)) orderedCats.push(cat)
+    })
+
+    return orderedCats.map((cat) => ({ category: cat, items: map.get(cat) }))
+  }, [activeCategory, items])
+
   const handleAdd = (item) => {
     if (item.hasVariantPage) {
       navigate(`/variant/${item.id}`)
@@ -61,15 +82,44 @@ export default function MenuSection() {
         </div>
       </div>
 
-      <div className="menu-grid-v2">
-        {filtered.map((item, index) => (
-          <MenuCard key={item.id} item={item} index={index} onAdd={handleAdd} />
-        ))}
+      {activeCategory === 'Semua' ? (
+        <div className="menu-groups">
+          {groupedByCategory.map((group) => (
+            <div className="menu-group-card" key={group.category}>
+              <div className="menu-group-head">
+                <h3>{group.category}</h3>
+                <span className="menu-group-count">{group.items.length} menu</span>
+              </div>
+              <div className="menu-group-scroll" role="list" aria-label={`Menu kategori ${group.category}`}>
+                {group.items.map((item, index) => (
+                  <MenuCard key={item.id} item={item} index={index} onAdd={handleAdd} />
+                ))}
+              </div>
+            </div>
+          ))}
 
-        {isAdmin ? (
-          <AddMenuCard index={filtered.length} onClick={() => navigate('/admin/menu/new')} />
-        ) : null}
-      </div>
+          {isAdmin ? (
+            <div className="menu-group-card">
+              <div className="menu-group-head">
+                <h3>Tambah menu</h3>
+              </div>
+              <div className="menu-group-scroll">
+                <AddMenuCard index={items.length} onClick={() => navigate('/admin/menu/new')} />
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <div className="menu-grid-v2">
+          {filtered.map((item, index) => (
+            <MenuCard key={item.id} item={item} index={index} onAdd={handleAdd} />
+          ))}
+
+          {isAdmin ? (
+            <AddMenuCard index={filtered.length} onClick={() => navigate('/admin/menu/new')} />
+          ) : null}
+        </div>
+      )}
 
       {!loading && !filtered.length && !isAdmin ? (
         <p className="section-copy">Menu belum tersedia saat ini. Silakan cek kembali sebentar lagi.</p>
