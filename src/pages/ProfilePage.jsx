@@ -20,10 +20,6 @@ export default function ProfilePage() {
     <div className="app-shell">
       <main className="container profile-stack profile-stack-final">
         <motion.div className="section-head compact profile-head-row" custom={0} variants={cardVariants} initial="hidden" animate="show">
-          <div>
-            <p className="eyebrow">Akun</p>
-            <h2>Akun & Kontak</h2>
-            <p className="section-copy">Halaman singkat untuk akun, sosial media, dan kontak AIME.</p>
           </div>
           <button type="button" className="ghost-btn small profile-close-btn" onClick={() => navigate('/')}>
             ×
