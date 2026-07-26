@@ -1463,10 +1463,12 @@ a { color: inherit; }
   gap: 12px;
   padding: 12px 14px;
   text-align: left;
-  background: linear-gradient(135deg, rgba(123, 24, 36, 0.98), rgba(100, 19, 29, 0.98) 65%, rgba(196, 151, 102, 0.36));
-  border: 1px solid rgba(196, 151, 102, 0.38);
+  background:
+    linear-gradient(135deg, rgba(123, 24, 36, 0.99), rgba(160, 39, 53, 0.96) 58%, rgba(196, 151, 102, 0.42)),
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,0));
+  border: 1px solid rgba(196, 151, 102, 0.40);
   color: #fff;
-  box-shadow: 0 18px 32px rgba(123, 24, 36, 0.28);
+  box-shadow: 0 18px 32px rgba(123, 24, 36, 0.30), inset 0 1px 0 rgba(255,255,255,.08);
 }
 
 .floating-checkout-icon-wrap {
