@@ -64,6 +64,8 @@ export default function MenuPage() {
         animate={cart.length ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 90, scale: 0.98 }}
         transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
       >
+        <span className="floating-checkout-handle" aria-hidden="true" />
+
         <span className="floating-checkout-icon-wrap" aria-hidden="true">
           <span className="floating-checkout-icon-bubble">
             <CartIcon />
@@ -72,10 +74,12 @@ export default function MenuPage() {
         </span>
 
         <span className="floating-checkout-copy">
-          <span className="floating-checkout-title">Checkout ({itemCount})</span>
+          <span className="floating-checkout-title">🛒 Checkout ({itemCount})</span>
           <strong>{currency.format(total)}</strong>
           <small>{itemCount} item{itemCount > 1 ? 's' : ''}</small>
         </span>
+
+        <span className="floating-checkout-arrow" aria-hidden="true">›</span>
       </motion.button>
 
       <Footer />
