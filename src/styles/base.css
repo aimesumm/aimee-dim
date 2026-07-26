@@ -551,26 +551,46 @@ a { color: inherit; }
   overscroll-behavior-x: contain;
 }
 
-/* Card khusus untuk baris kategori: seluruh kategori digeser horizontal
-   di dalam satu container, halaman tidak ikut memanjang saat kategori bertambah. */
+/* Card khusus untuk baris kategori: SELURUH tombol kategori berada di dalam
+   satu container scroll horizontal. Container ini yang digeser, BUKAN grid menu.
+   Struktur dan class ini murni tampilan — logic filter (activeCategory, onClick,
+   items.filter) di MenuSection.jsx tidak diubah sama sekali. */
 .category-tabs-card {
+  width: 100%;
   background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.82));
   border: 1px solid rgba(124, 31, 53, 0.14);
   box-shadow: var(--shadow-soft);
   border-radius: var(--radius-sm);
   padding: 4px 0;
   margin: 4px 0 18px;
+  overflow: hidden;
 }
 
 .category-tabs-card .tabs.scrollable {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
   margin: 0;
   padding: 10px 16px 12px;
   cursor: grab;
   user-select: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  scrollbar-width: thin;
 }
 
 .category-tabs-card .tabs.scrollable:active {
   cursor: grabbing;
+}
+
+/* Tombol kategori tidak boleh mengecil atau turun baris. */
+.category-tabs-card .tab {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 @media (max-width: 720px) {
