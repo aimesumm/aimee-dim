@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useCart } from '../context/CartContext'
@@ -12,7 +12,7 @@ import { currency, getSubtotal } from '../data/siteConfig'
 function CartIcon() {
   return (
     <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-      <path d="M0 1.5A.5.5 0 0 1 .5 1h1a.5.5 0 0 1 .485.379L2.89 5H14.5a.5.5 0 0 1 .485.62l-1.5 6A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.485-.379L1.61 2H.5a.5.5 0 0 1-.5-.5zM4 14a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" transform="scale(1)" />
+      <path d="M0 1.5A.5.5 0 0 1 .5 1h1a.5.5 0 0 1 .485.379L2.89 5H14.5a.5.5 0 0 1 .485.62l-1.5 6A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.485-.379L1.61 2H.5a.5.5 0 0 1-.5-.5zM4 14a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
     </svg>
   )
 }
@@ -32,7 +32,7 @@ export default function MenuPage() {
   const { cart } = useCart()
   const { preferredMethod } = useOrderDraft()
 
-  const subtotal = getSubtotal(cart)
+  const subtotal = useMemo(() => getSubtotal(cart), [cart])
   const total = subtotal
   const itemCount = cart.reduce((sum, item) => sum + Number(item.qty || 0), 0)
 
@@ -65,16 +65,18 @@ export default function MenuPage() {
         transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
       >
         <span className="floating-checkout-icon-wrap" aria-hidden="true">
-          <CartIcon />
+          <span className="floating-checkout-icon-bubble">
+            <CartIcon />
+          </span>
           <span className="floating-checkout-badge">{itemCount}</span>
         </span>
 
         <span className="floating-checkout-copy">
-          <span>Total</span>
+          <span>Checkout</span>
           <strong>{currency.format(total)}</strong>
         </span>
 
-        <span className="floating-checkout-action">CHECK OUT ({itemCount})</span>
+        <span className="floating-checkout-action">Continue</span>
       </motion.button>
 
       <Footer />

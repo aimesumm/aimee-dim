@@ -1,8 +1,7 @@
-
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import PaymentStatusCard from '../components/PaymentStatusCard'
+import PaymentMethodPicker from '../components/PaymentMethodPicker'
 import { checkPayment, createQris, getOrderStatus } from '../services/paymentGateway'
 import { currency, getStatusLabel } from '../data/siteConfig'
 import { supabaseBrowser } from '../lib/supabaseClient'
@@ -40,6 +39,7 @@ export default function PaymentPage() {
   const [checkAttempts, setCheckAttempts] = useState(0)
   const [lastCheckedStatus, setLastCheckedStatus] = useState(String(initialOrder?.paymentStatus || initialOrder?.status || 'pending').toLowerCase())
   const [qrisSnapshot, setQrisSnapshot] = useState(() => initialOrder?.qris || null)
+  const [selectedMethod, setSelectedMethod] = useState(() => String(routeMethod || initialOrder?.paymentMethod || initialOrder?.method || 'QRIS').toUpperCase())
 
   const stableQrisRef = useRef(initialOrder?.qris || null)
 
@@ -56,6 +56,11 @@ export default function PaymentPage() {
     if (merged.qris?.link_qris) stableQrisRef.current = merged.qris
     return merged
   }
+
+  useEffect(() => {
+    setSelectedMethod(String(routeMethod || order?.paymentMethod || order?.method || selectedMethod || 'QRIS').toUpperCase())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [routeMethod, order?.orderId])
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000)
@@ -81,6 +86,7 @@ export default function PaymentPage() {
           setOrder(normalized)
           setLastCheckedStatus(status)
           writeLastOrder(normalized)
+          setSelectedMethod(String(normalized.paymentMethod || normalized.method || routeMethod || 'QRIS').toUpperCase())
           if (status !== 'pending') {
             navigate(`/success/${String(normalized.paymentMethod || normalized.method || routeMethod || 'qris').toLowerCase()}/${normalized.orderId}`, { replace: true, state: { order: normalized } })
           }
@@ -167,7 +173,7 @@ export default function PaymentPage() {
   useEffect(() => {
     const ensureQris = async () => {
       if (!order?.orderId) return
-      if ((routeMethod || '').toLowerCase() !== 'qris') return
+      if ((selectedMethod || routeMethod || '').toUpperCase() !== 'QRIS') return
       if (order.qris?.link_qris || qrisSnapshot?.link_qris || stableQrisRef.current?.link_qris) return
       setGenerating(true)
       setError('')
@@ -188,7 +194,7 @@ export default function PaymentPage() {
     }
 
     ensureQris()
-  }, [order?.orderId, routeMethod])
+  }, [order?.orderId, routeMethod, selectedMethod])
 
   const goSuccess = (payload) => {
     const method = String(payload.paymentMethod || payload.method || routeMethod || 'qris').toLowerCase()
@@ -249,6 +255,12 @@ export default function PaymentPage() {
     }
   }
 
+  const handleCompletePayment = () => {
+    if (!order?.orderId) return
+    const method = String(selectedMethod || routeMethod || 'QRIS').toLowerCase()
+    navigate(`/payment/${method}/${order.orderId}`, { replace: true, state: { order } })
+  }
+
   if (bootstrapping && !order?.orderId) {
     return (
       <div className="app-shell">
@@ -278,7 +290,7 @@ export default function PaymentPage() {
     )
   }
 
-  const isQris = (routeMethod || order.paymentMethod || order.method || '').toUpperCase() === 'QRIS'
+  const isQris = (routeMethod || order.paymentMethod || order.method || selectedMethod || '').toUpperCase() === 'QRIS'
   const displayQris = order.qris?.link_qris ? order.qris : qrisSnapshot || stableQrisRef.current || null
   const expiresAt = displayQris?.expiresAt || (order.createdAt ? new Date(new Date(order.createdAt).getTime() + QRIS_TTL_MS).toISOString() : '')
   const qrisCountdown = expiresAt ? timeLeft(expiresAt, now) : ''
@@ -287,6 +299,18 @@ export default function PaymentPage() {
   return (
     <div className="app-shell">
       <main className="container payment-gateway-page">
+        <PaymentMethodPicker
+          value={selectedMethod}
+          onChange={setSelectedMethod}
+          onContinue={handleCompletePayment}
+          loading={checking || generating}
+          customer={{
+            name: order.customerName || order.name || '',
+            phone: order.customerPhone || order.phone || '',
+            email: order.customerEmail || order.email || '',
+          }}
+        />
+
         <PaymentStatusCard
           order={order}
           variant={isQris ? 'qris' : 'cash'}

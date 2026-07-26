@@ -55,6 +55,8 @@ export default function OriginalVariantPage() {
         id: item.id,
         name: item.name,
         price: unitPrice,
+        basePrice: item.price,
+        variantPrice: variantPrice,
         variant: selectedOption?.key || '',
         variantLabel: selectedOption?.label || '',
         category: item.category,
