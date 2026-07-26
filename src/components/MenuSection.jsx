@@ -11,18 +11,33 @@ function uniqCategoryList(items) {
   const ordered = ['Semua']
   const base = Array.isArray(categories) ? categories : []
   const raw = [...base, ...items.map((item) => item.category)]
-  const seen = new Set()
+  const seen = new Set(['semua'])
 
   for (const cat of raw) {
     const label = String(cat || '').trim()
     if (!label) continue
     const key = label.toLowerCase()
+    if (key === 'semua') continue
     if (seen.has(key)) continue
     seen.add(key)
     ordered.push(label)
   }
 
   return ordered
+}
+
+function getCategoryMark(category) {
+  const key = String(category || '').trim().toLowerCase()
+
+  if (key === 'semua') return '💯'
+  if (key === 'makanan') return '🍱'
+  if (key === 'minuman') return '🧋'
+  return '🥟'
+}
+
+function getCategoryLabel(category) {
+  const label = String(category || '').trim() || 'Semua'
+  return `${getCategoryMark(label)} ${label}`
 }
 
 export default function MenuSection() {
@@ -84,8 +99,8 @@ export default function MenuSection() {
       </div>
 
       <div className="category-toolbar glass-card">
-        <div className="menu-active-chip menu-active-chip-inline" aria-live="polite" title={activeCategory}>
-          <strong>{activeCategory}</strong>
+        <div className="menu-active-chip menu-active-chip-inline" aria-live="polite" title={getCategoryLabel(activeCategory)}>
+          <strong>{getCategoryLabel(activeCategory)}</strong>
         </div>
 
         <div className="menu-tabs-shell">
