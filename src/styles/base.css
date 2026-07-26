@@ -2256,21 +2256,57 @@ a { color: inherit; }
 }
 
 .category-scroll-card {
-  padding: 14px 16px 12px;
+  position: relative;
   margin-bottom: 16px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
   overflow: hidden;
+}
+
+.category-scroll-card::before,
+.category-scroll-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 28px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.category-scroll-card::before {
+  left: 0;
+  background: linear-gradient(90deg, rgba(26, 7, 16, 0.94), rgba(26, 7, 16, 0));
+}
+
+.category-scroll-card::after {
+  right: 0;
+  background: linear-gradient(270deg, rgba(26, 7, 16, 0.94), rgba(26, 7, 16, 0));
 }
 
 .category-tabs {
   width: 100%;
   align-items: center;
-  padding: 2px 4px 6px;
+  gap: 10px;
+  padding: 8px 4px 10px;
   margin: 0;
   white-space: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: x proximity;
+}
+
+.category-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .category-tabs .tab {
   flex: 0 0 auto;
+  scroll-snap-align: start;
 }
 
 .category-scroll-card .tabs.scrollable {
