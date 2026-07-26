@@ -3079,3 +3079,59 @@ body {
   }
 }
 
+
+
+/* --- Category toolbar alignment tweak --- */
+.category-toolbar {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.menu-active-chip-inline {
+  min-width: 96px;
+  padding: 10px 12px;
+  justify-items: start;
+  text-align: left;
+}
+
+.menu-active-chip-inline strong {
+  text-align: left;
+}
+
+.menu-tabs-shell {
+  min-width: 0;
+}
+
+.menu-tabs {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(123, 24, 36, 0.45) rgba(123, 24, 36, 0.08);
+  padding-bottom: 6px;
+}
+
+.menu-tabs::-webkit-scrollbar {
+  height: 4px;
+}
+
+.menu-tabs::-webkit-scrollbar-thumb {
+  background: rgba(123, 24, 36, 0.45);
+}
+
+.menu-tabs::-webkit-scrollbar-track {
+  background: rgba(123, 24, 36, 0.08);
+}
+
+@media (max-width: 480px) {
+  .category-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .menu-active-chip-inline {
+    width: fit-content;
+    min-width: 0;
+  }
+
+  .menu-tabs {
+    width: 100%;
+  }
+}
