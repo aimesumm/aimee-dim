@@ -148,7 +148,7 @@ export function getOwnerOrderMessage(order = {}) {
 
   const note = String(order.note || order.customerNote || '').trim()
 
-  return `🍱 PESANAN BARU AIME-Dimsum\n\n🆔 Order ID:\n${order.orderId || '-'}\n\n👤 Nama Customer:\n${order.customerName || order.name || '-'}\n\n📱 Nomor Customer:\n${order.customerPhone || order.phone || '-'}\n\n✉️ Email Customer:\n${order.customerEmail || order.email || '-'}\n\n🛒 Detail Pesanan:\n\n${items || '-'}\n\n📝 Catatan Tambahan:\n${note || '-'}\n\nJumlah Item:\n${getOrderItemsCount(order.items || [])}\n\n💰 Total:\n${currency.format(Number(order.total || 0))}\n\n💳 Metode Pembayaran:\n${getMethodLabel(order.paymentMethod || order.method)}\n\n📌 Status:\n${getStatusLabel(order.paymentStatus || order.status)}\n\n⏰ Waktu:\n${formatOrderTime(order.createdAt || order.time)}`
+  return `🍱 PESANAN BARU AIME-Dimsum\n\n🆔 Order ID:\n${order.orderId || '-'}\n\n👤 Nama Customer:\n${order.customerName || order.name || '-'}\n\n📱 Nomor Customer:\n${order.customerPhone || order.customer_phone || order.phone || order.whatsapp || '-'}\n\n✉️ Email Customer:\n${order.customerEmail || order.customer_email || order.email || '-'}\n\n🛒 Detail Pesanan:\n\n${items || '-'}\n\n📝 Catatan Tambahan:\n${note || '-'}\n\nJumlah Item:\n${getOrderItemsCount(order.items || [])}\n\n💰 Total:\n${currency.format(Number(order.total || 0))}\n\n💳 Metode Pembayaran:\n${getMethodLabel(order.paymentMethod || order.method)}\n\n📌 Status:\n${getStatusLabel(order.paymentStatus || order.status)}\n\n⏰ Waktu:\n${formatOrderTime(order.createdAt || order.time)}`
 }
 
 export function getCustomerOrderMessage(order = {}) {
