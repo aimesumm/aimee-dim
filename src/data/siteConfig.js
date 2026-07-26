@@ -1,5 +1,7 @@
 
-export const categories = ['Semua', 'Dimsum', 'Minuman']
+export const menuCategories = ['Semua', 'Makanan', 'Minuman', 'Lainnya', 'Paket']
+
+export const categories = menuCategories
 
 export const dimsumVariants = [
   'Original',
