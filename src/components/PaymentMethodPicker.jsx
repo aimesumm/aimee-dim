@@ -62,8 +62,7 @@ export default function PaymentMethodPicker({ value, onChange, onContinue, loadi
                   <Icon />
                 </span>
               </span>
-              <span className="sr-only">{method.title}</span>
-              <span className="payment-option-spacer" aria-hidden="true" />
+              <span className="payment-option-title">{method.title}</span>
               <span className="payment-option-radio payment-option-radio-right" aria-hidden="true">
                 <span />
               </span>

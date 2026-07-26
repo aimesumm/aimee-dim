@@ -3,14 +3,39 @@ import { motion } from 'framer-motion'
 import { currency, getMethodLabel, getStatusLabel } from '../data/siteConfig'
 import OrderSummary from './OrderSummary'
 
-function QrisPreview({ qris, orderId, total, countdown }) {
-  const imageSrc = qris?.link_qris || '/qris-user.png'
+function QrisPreview({ qris, orderId, total, countdown, generating, error, onRetry }) {
   const nominal = Number(qris?.nominal ?? total ?? 0)
+
+  if (!qris?.link_qris) {
+    if (generating) {
+      return (
+        <div className="confirm-qris-box">
+          <div className="payment-loader-box">
+            <div className="loading-spinner" />
+            <strong>Sedang membuat QRIS...</strong>
+            <p>Menunggu respons API converter QRIS.</p>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div className="confirm-qris-box">
+        <div className="payment-error-box">
+          <strong>Gagal generate QRIS</strong>
+          <p>{error || 'QR belum tersedia.'}</p>
+          <button className="primary-btn" type="button" onClick={onRetry} disabled={generating}>
+            Coba Lagi
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="confirm-qris-box">
       <div className="confirm-qris-image-wrap">
-        <img src={imageSrc} alt="QRIS pembayaran" className="confirm-qris-image" />
+        <img src={qris.link_qris} alt="QRIS pembayaran" className="confirm-qris-image" />
       </div>
 
       <div className="confirm-qris-meta">
@@ -43,6 +68,9 @@ export default function PaymentConfirmationCard({
   onConfirm,
   qris,
   countdown,
+  generating,
+  qrisError,
+  onRetryQris,
   children,
 }) {
   const paymentStatus = String(order?.paymentStatus || order?.status || 'pending').toLowerCase()
@@ -74,7 +102,15 @@ export default function PaymentConfirmationCard({
       <OrderSummary order={order} />
 
       {isQris ? (
-        <QrisPreview qris={qris} orderId={order?.orderId} total={order?.total} countdown={countdown} />
+        <QrisPreview
+          qris={qris}
+          orderId={order?.orderId}
+          total={order?.total}
+          countdown={countdown}
+          generating={generating}
+          error={qrisError}
+          onRetry={onRetryQris}
+        />
       ) : (
         <CashPreview orderId={order?.orderId} total={order?.total} />
       )}
