@@ -1,14 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 
-function BackIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="M15 18l-6-6 6-6" />
-    </svg>
-  )
-}
-
 function SearchIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -33,15 +25,6 @@ export default function Header() {
 
   return (
     <header className="topbar menu-topbar glass-card">
-      <button
-        className="icon-btn header-back-btn"
-        type="button"
-        onClick={() => navigate(-1)}
-        aria-label="Kembali"
-      >
-        <BackIcon />
-      </button>
-
       <div className="header-title-wrap">
         <h1 className="header-title">LAPAK - AIME</h1>
       </div>
