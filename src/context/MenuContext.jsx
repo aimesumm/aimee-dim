@@ -28,8 +28,9 @@ function normalizeBackendItem(row) {
 }
 
 export function MenuProvider({ children }) {
-  // Mulai dari kosong: menu HANYA berasal dari Supabase lewat /api/menu-list.
-  // Tidak ada lagi menu bawaan/dummy yang tampil di halaman utama.
+  // Menu sekarang bisa berasal dari backend Supabase, atau fallback lokal
+  // bila endpoint backend belum aktif. Ini menjaga tombol "Tambah Menu"
+  // tetap berfungsi saat Anda masih menyiapkan koneksi Supabase.
   const [items, setItems] = useState([])
   const [source, setSource] = useState('loading')
   const [loading, setLoading] = useState(true)
@@ -37,9 +38,12 @@ export function MenuProvider({ children }) {
   const refresh = useCallback(async () => {
     setLoading(true)
     try {
-      const rows = await fetchMenuItems()
+      const result = await fetchMenuItems()
+      const rows = Array.isArray(result) ? result : result?.items || []
+      const nextSource = Array.isArray(result) ? 'backend' : result?.source || 'backend'
+
       setItems(rows.map(normalizeBackendItem))
-      setSource('backend')
+      setSource(nextSource)
     } catch (error) {
       console.warn('[MENU] Gagal memuat menu dari backend.', error.message)
       setItems([])
