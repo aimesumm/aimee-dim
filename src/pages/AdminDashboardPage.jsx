@@ -55,7 +55,9 @@ export default function AdminDashboardPage() {
             <p className="section-copy">
               {source === 'error'
                 ? 'Gagal memuat menu dari backend. Cek koneksi Supabase, lalu refresh halaman ini.'
-                : 'Klik menu untuk mengedit. Perubahan langsung tersimpan ke backend.'}
+                : source === 'local'
+                  ? 'Mode lokal aktif. Menu tetap bisa ditambah/edit/hapus, tetapi data disimpan di browser ini sampai backend Supabase tersambung.'
+                  : 'Klik menu untuk mengedit. Perubahan langsung tersimpan ke backend.'}
             </p>
           </div>
           <div className="topbar-actions">
