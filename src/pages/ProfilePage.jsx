@@ -20,7 +20,6 @@ export default function ProfilePage() {
     <div className="app-shell">
       <main className="container profile-stack profile-stack-final">
         <motion.div className="section-head compact profile-head-row" custom={0} variants={cardVariants} initial="hidden" animate="show">
-          </div>
           <button type="button" className="ghost-btn small profile-close-btn" onClick={() => navigate('/')}>
             ×
           </button>
@@ -36,11 +35,10 @@ export default function ProfilePage() {
           <div className="profile-hero-head">
             <div>
               <p className="profile-hero-label">Akun tamu</p>
-              <h3>Guest account</h3>
-              <p className="section-copy">Masuk ke admin untuk mengelola menu dan data pesanan.</p>
+              <h3>Log In as Guest</h3>
             </div>
             <button type="button" className="primary-btn" onClick={() => navigate('/admin/login')}>
-              Login account
+              Sign in
             </button>
           </div>
         </motion.section>
