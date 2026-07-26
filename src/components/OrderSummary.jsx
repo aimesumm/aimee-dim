@@ -2,10 +2,10 @@
 import React from 'react'
 import { currency, formatOrderTime, getMethodLabel, getStatusLabel, getSubtotal, getOrderItemsCount, formatItemVariant } from '../data/siteConfig'
 
-export default function OrderSummary({ order, cart = [], serviceFee = 0 }) {
+export default function OrderSummary({ order, cart = [] }) {
   const items = order?.items || cart
   const subtotal = order?.subtotal ?? getSubtotal(items)
-  const total = order?.total ?? subtotal + serviceFee
+  const total = order?.total ?? subtotal
 
   return (
     <div className="order-summary">
@@ -38,7 +38,6 @@ export default function OrderSummary({ order, cart = [], serviceFee = 0 }) {
 
       <div className="summary-total-box">
         <div className="summary-row"><span>Subtotal</span><strong>{currency.format(subtotal)}</strong></div>
-        <div className="summary-row"><span>Biaya layanan</span><strong>{currency.format(serviceFee)}</strong></div>
         <div className="summary-row total"><span>Total</span><strong>{currency.format(total)}</strong></div>
       </div>
     </div>
