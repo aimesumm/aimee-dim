@@ -39,6 +39,7 @@ export default function App() {
                 <Route path="/variant/:id" element={<OriginalVariantPage />} />
                 <Route path="/order" element={<OrderPage />} />
                 <Route path="/checkout" element={<Navigate to="/order" replace />} />
+                <Route path="/payment" element={<PaymentPage />} />
                 <Route path="/payment/:method/:orderId" element={<PaymentPage />} />
                 <Route path="/pay/:method/:orderId" element={<Navigate to="/payment/:method/:orderId" replace />} />
                 <Route path="/success/qris/:orderId" element={<QrisSuccessPage />} />
