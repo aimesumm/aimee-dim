@@ -116,6 +116,39 @@ function removeLocalMenuItem(id) {
   return { ok: true, id: resolvedId }
 }
 
+function sortMenuItems(items) {
+  return [...items].sort((a, b) => {
+    const sortDiff = normalizeNumber(a?.sortOrder, 0) - normalizeNumber(b?.sortOrder, 0)
+    if (sortDiff !== 0) return sortDiff
+    const aTime = Date.parse(a?.updatedAt || a?.createdAt || 0) || 0
+    const bTime = Date.parse(b?.updatedAt || b?.createdAt || 0) || 0
+    return aTime - bTime
+  })
+}
+
+function mergeMenuItemLists(primaryItems = [], fallbackItems = []) {
+  const merged = []
+  const seen = new Set()
+
+  for (const item of Array.isArray(primaryItems) ? primaryItems : []) {
+    const next = normalizeMenuItem(item)
+    if (!next) continue
+    merged.push(next)
+    seen.add(String(next.id))
+  }
+
+  for (const item of Array.isArray(fallbackItems) ? fallbackItems : []) {
+    const next = normalizeMenuItem(item)
+    if (!next) continue
+    const key = String(next.id)
+    if (seen.has(key)) continue
+    merged.push(next)
+    seen.add(key)
+  }
+
+  return sortMenuItems(merged)
+}
+
 function shouldFallbackToLocal(error) {
   const status = Number(error?.status)
   if (status === 400 || status === 401 || status === 403) return false
@@ -176,16 +209,26 @@ async function apiJson(url, options = {}) {
 export async function fetchMenuItems() {
   try {
     const data = await apiJson('/api/menu-list')
-    const items = Array.isArray(data?.items) ? data.items.map(normalizeMenuItem).filter(Boolean) : []
+    const backendItems = Array.isArray(data?.items) ? data.items.map(normalizeMenuItem).filter(Boolean) : []
+    const localItems = readLocalMenuItems()
+    const items = mergeMenuItemLists(backendItems, localItems)
+
+    // Keep the browser cache in sync without losing items that were created
+    // while the backend was temporarily unavailable or not fully migrated yet.
     writeLocalMenuItems(items)
-    return { items, source: 'backend' }
+
+    const source = backendItems.length && localItems.length && items.length > backendItems.length
+      ? 'mixed'
+      : 'backend'
+
+    return { items, source }
   } catch (error) {
     if (!shouldFallbackToLocal(error)) {
       throw error
     }
 
     const items = readLocalMenuItems()
-    return { items, source: 'local' }
+    return { items: sortMenuItems(items), source: 'local' }
   }
 }
 
