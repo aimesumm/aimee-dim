@@ -1463,8 +1463,8 @@ a { color: inherit; }
   gap: 12px;
   padding: 12px 14px;
   text-align: left;
-  background: #7B1824;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(123, 24, 36, 0.98), rgba(100, 19, 29, 0.98) 65%, rgba(196, 151, 102, 0.36));
+  border: 1px solid rgba(196, 151, 102, 0.38);
   color: #fff;
   box-shadow: 0 18px 32px rgba(123, 24, 36, 0.28);
 }
@@ -1481,8 +1481,9 @@ a { color: inherit; }
   border-radius: 18px;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.10));
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(12px);
 }
 
 .floating-checkout-icon-bubble svg {
@@ -1505,7 +1506,7 @@ a { color: inherit; }
   padding: 0 6px;
   display: grid;
   place-items: center;
-  background: #fff;
+  background: linear-gradient(180deg, #fff, rgba(255, 248, 241, 0.92));
   color: var(--accent);
   font-size: 0.72rem;
   font-weight: 800;
@@ -4066,9 +4067,10 @@ body, .app-shell, .app-shell-menu {
   width: auto;
   height: 72px;
   padding: 0;
-  border: 0;
+  border: 1px solid rgba(196, 151, 102, 0.38);
   overflow: hidden;
   border-radius: 18px;
+  background: linear-gradient(135deg, rgba(123, 24, 36, 0.98) 0%, rgba(100, 19, 29, 0.98) 58%, rgba(196, 151, 102, 0.34) 150%);
   box-shadow: 0 20px 44px rgba(123, 24, 36, 0.22);
 }
 
@@ -4089,8 +4091,9 @@ body, .app-shell, .app-shell-menu {
   border-radius: 18px;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.10));
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(12px);
 }
 
 .floating-checkout-icon-bubble svg {
@@ -4113,7 +4116,7 @@ body, .app-shell, .app-shell-menu {
   padding: 0 6px;
   display: grid;
   place-items: center;
-  background: #fff;
+  background: linear-gradient(180deg, #fff, rgba(255, 248, 241, 0.92));
   color: var(--accent);
   font-size: 0.72rem;
   font-weight: 800;
