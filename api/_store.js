@@ -75,7 +75,8 @@ function mapRow(row) {
     customerName: row.customer_name ?? row.customerName ?? '',
     customerPhone: row.customer_phone ?? row.customerPhone ?? '',
     customerEmail: row.customer_email ?? row.customerEmail ?? '',
-    note: row.note ?? '',
+    note: row.note ?? row.customerNote ?? '',
+    customerNote: row.note ?? row.customerNote ?? '',
     items: Array.isArray(row.items) ? clone(row.items) : [],
     itemCount: toNumber(row.item_count ?? row.itemCount, 0),
     subtotal: toNumber(row.subtotal, 0),
@@ -93,6 +94,7 @@ function mapRow(row) {
   order.name = order.customerName
   order.phone = order.customerPhone
   order.email = order.customerEmail
+  order.customerNote = order.note
   order.method = order.paymentMethod
   order.time = order.createdAt
 
