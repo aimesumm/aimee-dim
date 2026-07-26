@@ -73,10 +73,10 @@ function mapRow(row) {
   const order = {
     orderId: String(row.order_id ?? row.orderId ?? ''),
     customerName: row.customer_name ?? row.customerName ?? '',
-    customerPhone: row.customer_phone ?? row.customerPhone ?? '',
-    customerEmail: row.customer_email ?? row.customerEmail ?? '',
-    note: row.note ?? row.customerNote ?? '',
-    customerNote: row.note ?? row.customerNote ?? '',
+    customerPhone: row.customer_phone ?? row.customerPhone ?? row.phone ?? row.whatsapp ?? '',
+    customerEmail: row.customer_email ?? row.customerEmail ?? row.email ?? '',
+    note: row.note ?? row.customerNote ?? row.customer_note ?? '',
+    customerNote: row.note ?? row.customerNote ?? row.customer_note ?? '',
     items: Array.isArray(row.items) ? clone(row.items) : [],
     itemCount: toNumber(row.item_count ?? row.itemCount, 0),
     subtotal: toNumber(row.subtotal, 0),
@@ -94,7 +94,10 @@ function mapRow(row) {
   order.name = order.customerName
   order.phone = order.customerPhone
   order.email = order.customerEmail
+  order.customer_phone = order.customerPhone
+  order.customer_email = order.customerEmail
   order.customerNote = order.note
+  order.customer_note = order.note
   order.method = order.paymentMethod
   order.time = order.createdAt
 

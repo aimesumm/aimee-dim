@@ -114,10 +114,10 @@ function buildCustomerBlock(order = {}) {
 ${order.customerName || order.name || '-'}
 
 📱 Nomor Customer:
-${order.customerPhone || order.phone || '-'}
+${order.customerPhone || order.customer_phone || order.phone || order.whatsapp || '-'}
 
 ✉️ Email Customer:
-${order.customerEmail || order.email || '-'}
+${order.customerEmail || order.customer_email || order.email || '-'}
 
 📝 Catatan Tambahan:
 ${note || '-'}`
