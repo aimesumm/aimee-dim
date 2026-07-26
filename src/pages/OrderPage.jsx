@@ -138,7 +138,8 @@ export default function OrderPage() {
           <div className="section-head compact">
             <div>
               <p className="eyebrow">Daftar pesanan</p>
-              <h2>Scroll daftar pesanan</h2>
+              <h2>Daftar pesanan</h2>
+              {cart.length ? <p className="section-copy">Geser ke samping untuk melihat semua item pesanan.</p> : null}
             </div>
           </div>
 
