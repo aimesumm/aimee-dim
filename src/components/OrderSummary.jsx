@@ -1,6 +1,5 @@
-
 import React from 'react'
-import { currency, formatOrderTime, getMethodLabel, getStatusLabel, getSubtotal, getOrderItemsCount, formatItemVariant } from '../data/siteConfig'
+import { currency, formatOrderTime, getMethodLabel, getSubtotal, getOrderItemsCount, formatItemVariant } from '../data/siteConfig'
 
 export default function OrderSummary({ order, cart = [], serviceFee = 0 }) {
   const items = order?.items || cart
@@ -9,14 +8,6 @@ export default function OrderSummary({ order, cart = [], serviceFee = 0 }) {
 
   return (
     <div className="order-summary">
-      <div className="summary-head">
-        <div>
-          <p className="eyebrow">Ringkasan order</p>
-          <h3>{order?.orderId || 'Keranjang aktif'}</h3>
-        </div>
-        {order ? <span className="status-pill live">{getStatusLabel(order.status)}</span> : null}
-      </div>
-
       <div className="summary-stack">
         <div className="summary-row"><span>Nama customer</span><strong>{order?.name || '-'}</strong></div>
         <div className="summary-row"><span>Nomor customer</span><strong>{order?.phone || '-'}</strong></div>
