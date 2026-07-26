@@ -88,7 +88,7 @@ export default function OrderPage() {
           <div>
             <p className="eyebrow">Order</p>
             <h1>Pesanan yang sudah dipilih</h1>
-            <p className="hero-text">Edit jumlah item di sini, tambahkan menu lain dari panel kanan, lalu lanjutkan ke payment.</p>
+            <p className="hero-text">Edit jumlah item dibawah ini, atau masih m tmbah?? Klik Jo Add order</p>
           </div>
         </motion.section>
 
@@ -98,7 +98,6 @@ export default function OrderPage() {
               <div className="section-head compact order-items-head">
                 <div>
                   <p className="eyebrow">Ordered Items</p>
-                  <h2>Daftar order</h2>
                 </div>
                 <button className="ghost-btn order-add-more-btn" type="button" onClick={() => navigate('/')}>
                   + Add order
@@ -160,7 +159,6 @@ export default function OrderPage() {
               <div className="section-head compact">
                 <div>
                   <p className="eyebrow">Add another notes</p>
-                  <h2>Catatan tambahan</h2>
                 </div>
               </div>
 
@@ -179,7 +177,6 @@ export default function OrderPage() {
               <div className="section-head compact">
                 <div>
                   <p className="eyebrow">Payment detail</p>
-                  <h2>Subtotal menu, varian, dan total</h2>
                 </div>
               </div>
 
@@ -202,7 +199,6 @@ export default function OrderPage() {
               <div className="section-head compact">
                 <div>
                   <p className="eyebrow">Related Menu</p>
-                  <h2>Menu lain untuk ditambahkan</h2>
                 </div>
               </div>
 
