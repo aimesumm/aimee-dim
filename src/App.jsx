@@ -1,4 +1,5 @@
 
+import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import MenuPage from './pages/MenuPage'
 import OriginalVariantPage from './pages/OriginalVariantPage'
@@ -15,14 +16,24 @@ import { CartProvider } from './context/CartContext'
 import { OrderDraftProvider } from './context/OrderDraftContext'
 import { AdminAuthProvider } from './context/AdminAuthContext'
 import { MenuProvider } from './context/MenuContext'
+import LoadingScreen from './components/LoadingScreen'
+
 
 export default function App() {
+  const [bootLoading, setBootLoading] = useState(true)
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setBootLoading(false), 4000)
+    return () => window.clearTimeout(timer)
+  }, [])
+
   return (
     <AdminAuthProvider>
       <MenuProvider>
         <CartProvider>
           <OrderDraftProvider>
             <BrowserRouter>
+              {bootLoading ? <LoadingScreen /> : null}
               <Routes>
                 <Route path="/" element={<MenuPage />} />
                 <Route path="/variant/:id" element={<OriginalVariantPage />} />
