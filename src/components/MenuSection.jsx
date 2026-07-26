@@ -1,5 +1,5 @@
 
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { categories } from '../data/siteConfig'
 import { useCart } from '../context/CartContext'
@@ -15,31 +15,48 @@ export default function MenuSection() {
   const { isAdmin } = useAdminAuth()
   const navigate = useNavigate()
 
+  // Drag-to-scroll untuk baris kategori (khusus mouse di desktop).
+  // Ini murni interaksi UI, tidak menyentuh logic filter kategori.
+  const tabsScrollRef = useRef(null)
+  const dragInfo = useRef({ isDragging: false, startX: 0, startScrollLeft: 0, moved: false })
+
+  const handleTabsMouseDown = (e) => {
+    const el = tabsScrollRef.current
+    if (!el) return
+    dragInfo.current = {
+      isDragging: true,
+      startX: e.pageX,
+      startScrollLeft: el.scrollLeft,
+      moved: false,
+    }
+  }
+
+  const handleTabsMouseMove = (e) => {
+    const el = tabsScrollRef.current
+    if (!el || !dragInfo.current.isDragging) return
+    const delta = e.pageX - dragInfo.current.startX
+    if (Math.abs(delta) > 3) dragInfo.current.moved = true
+    el.scrollLeft = dragInfo.current.startScrollLeft - delta
+  }
+
+  const stopTabsDrag = () => {
+    dragInfo.current.isDragging = false
+  }
+
+  const handleTabClick = (cat) => (e) => {
+    // Cegah klik kategori tidak sengaja setelah drag mouse.
+    if (dragInfo.current.moved) {
+      e.preventDefault()
+      dragInfo.current.moved = false
+      return
+    }
+    setActiveCategory(cat)
+  }
+
   const filtered = useMemo(() => {
     return activeCategory === 'Semua'
       ? items
       : items.filter((item) => item.category === activeCategory)
-  }, [activeCategory, items])
-
-  // Saat kategori "Semua" aktif, kelompokkan menu per kategori. Tiap
-  // kategori tampil sebagai card sendiri dengan scroll horizontal, agar
-  // halaman tidak memanjang ke bawah hanya karena banyak kategori.
-  const groupedByCategory = useMemo(() => {
-    if (activeCategory !== 'Semua') return []
-
-    const map = new Map()
-    items.forEach((item) => {
-      const cat = item.category || 'Lainnya'
-      if (!map.has(cat)) map.set(cat, [])
-      map.get(cat).push(item)
-    })
-
-    const orderedCats = categories.filter((cat) => cat !== 'Semua' && map.has(cat))
-    map.forEach((_, cat) => {
-      if (!orderedCats.includes(cat)) orderedCats.push(cat)
-    })
-
-    return orderedCats.map((cat) => ({ category: cat, items: map.get(cat) }))
   }, [activeCategory, items])
 
   const handleAdd = (item) => {
@@ -68,12 +85,22 @@ export default function MenuSection() {
           <h2>Pilihan makanan, minuman, paket, dan lainnya AIME-Dimsum</h2>
           <p className="section-copy">Pilih menu favoritmu, tambahkan ke keranjang, dan pesan dengan mudah.</p>
         </div>
-        <div className="tabs scrollable">
+      </div>
+
+      <div className="category-tabs-card">
+        <div
+          className="tabs scrollable"
+          ref={tabsScrollRef}
+          onMouseDown={handleTabsMouseDown}
+          onMouseMove={handleTabsMouseMove}
+          onMouseUp={stopTabsDrag}
+          onMouseLeave={stopTabsDrag}
+        >
           {categories.map((cat) => (
             <button
               key={cat}
               className={activeCategory === cat ? 'tab active' : 'tab'}
-              onClick={() => setActiveCategory(cat)}
+              onClick={handleTabClick(cat)}
               type="button"
             >
               {cat}
@@ -82,44 +109,15 @@ export default function MenuSection() {
         </div>
       </div>
 
-      {activeCategory === 'Semua' ? (
-        <div className="menu-groups">
-          {groupedByCategory.map((group) => (
-            <div className="menu-group-card" key={group.category}>
-              <div className="menu-group-head">
-                <h3>{group.category}</h3>
-                <span className="menu-group-count">{group.items.length} menu</span>
-              </div>
-              <div className="menu-group-scroll" role="list" aria-label={`Menu kategori ${group.category}`}>
-                {group.items.map((item, index) => (
-                  <MenuCard key={item.id} item={item} index={index} onAdd={handleAdd} />
-                ))}
-              </div>
-            </div>
-          ))}
+      <div className="menu-grid-v2">
+        {filtered.map((item, index) => (
+          <MenuCard key={item.id} item={item} index={index} onAdd={handleAdd} />
+        ))}
 
-          {isAdmin ? (
-            <div className="menu-group-card">
-              <div className="menu-group-head">
-                <h3>Tambah menu</h3>
-              </div>
-              <div className="menu-group-scroll">
-                <AddMenuCard index={items.length} onClick={() => navigate('/admin/menu/new')} />
-              </div>
-            </div>
-          ) : null}
-        </div>
-      ) : (
-        <div className="menu-grid-v2">
-          {filtered.map((item, index) => (
-            <MenuCard key={item.id} item={item} index={index} onAdd={handleAdd} />
-          ))}
-
-          {isAdmin ? (
-            <AddMenuCard index={filtered.length} onClick={() => navigate('/admin/menu/new')} />
-          ) : null}
-        </div>
-      )}
+        {isAdmin ? (
+          <AddMenuCard index={filtered.length} onClick={() => navigate('/admin/menu/new')} />
+        ) : null}
+      </div>
 
       {!loading && !filtered.length && !isAdmin ? (
         <p className="section-copy">Menu belum tersedia saat ini. Silakan cek kembali sebentar lagi.</p>
