@@ -1,20 +1,9 @@
-
 import React from 'react'
 import { motion } from 'framer-motion'
 
 const METHODS = [
-  {
-    value: 'QRIS',
-    title: 'QRIS',
-    icon: '⬛',
-    desc: 'Cepat, modern, dan langsung masuk ke alur pembayaran.',
-  },
-  {
-    value: 'CASH',
-    title: 'Tunai',
-    icon: '💵',
-    desc: 'Pesanan dikonfirmasi owner setelah pembayaran diterima.',
-  },
+  { value: 'QRIS', title: 'QRIS' },
+  { value: 'CASH', title: 'Tunai' },
 ]
 
 export default function PaymentMethodPicker({ value, onChange, onContinue, loading }) {
@@ -32,7 +21,7 @@ export default function PaymentMethodPicker({ value, onChange, onContinue, loadi
         </div>
       </div>
 
-      <div className="payment-option-grid">
+      <div className="payment-option-grid payment-option-grid-simple">
         {METHODS.map((method) => (
           <label key={method.value} className={value === method.value ? 'payment-option active' : 'payment-option'}>
             <input
@@ -42,11 +31,7 @@ export default function PaymentMethodPicker({ value, onChange, onContinue, loadi
               checked={value === method.value}
               onChange={() => onChange(method.value)}
             />
-            <span className="payment-option-icon" aria-hidden="true">{method.icon}</span>
-            <span className="payment-option-copy">
-              <strong>{method.title}</strong>
-              <small>{method.desc}</small>
-            </span>
+            <span className="payment-option-title">{method.title}</span>
           </label>
         ))}
       </div>
