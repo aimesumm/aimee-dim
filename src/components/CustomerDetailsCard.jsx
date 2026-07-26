@@ -2,7 +2,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { useOrderDraft } from '../context/OrderDraftContext'
 
-export default function CustomerDetailsCard() {
+export default function CustomerDetailsCard({ hideNote = false, title = 'Customer information', copy = 'Data ini akan ikut terkirim ke backend dan ke pesan admin untuk konfirmasi pesanan.' }) {
   const { customer, setCustomer } = useOrderDraft()
 
   return (
@@ -16,8 +16,8 @@ export default function CustomerDetailsCard() {
       <div className="section-head compact">
         <div>
           <p className="eyebrow">Customer information</p>
-          <h2>Nama, nomor, email, dan catatan</h2>
-          <p className="section-copy">Data ini akan ikut terkirim ke backend dan ke pesan admin untuk konfirmasi pesanan.</p>
+          <h2>{title}</h2>
+          <p className="section-copy">{copy}</p>
         </div>
       </div>
 
@@ -50,14 +50,17 @@ export default function CustomerDetailsCard() {
           />
         </label>
 
-        <label className="field field-full">
-          <span>Add another notes</span>
-          <input
-            value={customer.note}
-            onChange={(event) => setCustomer((prev) => ({ ...prev, note: event.target.value }))}
-            placeholder="Tambah catatan tambahan untuk admin"
-          />
-        </label>
+        {hideNote ? null : (
+          <label className="field field-full">
+            <span>Add another notes</span>
+            <textarea
+              value={customer.note}
+              onChange={(event) => setCustomer((prev) => ({ ...prev, note: event.target.value }))}
+              placeholder="Tambah catatan tambahan untuk admin"
+              rows={3}
+            />
+          </label>
+        )}
       </div>
     </motion.section>
   )

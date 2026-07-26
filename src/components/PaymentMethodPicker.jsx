@@ -23,11 +23,11 @@ function CashIcon() {
 }
 
 const METHODS = [
-  { value: 'QRIS', title: 'QRIS', desc: 'Bayar cepat dengan scan QR', icon: QrisIcon },
-  { value: 'CASH', title: 'Tunai', desc: 'Bayar langsung ke kasir', icon: CashIcon },
+  { value: 'QRIS', title: 'QRIS', icon: QrisIcon },
+  { value: 'CASH', title: 'Tunai', icon: CashIcon },
 ]
 
-export default function PaymentMethodPicker({ value, onChange, onContinue, loading, customer = {} }) {
+export default function PaymentMethodPicker({ value, onChange, onContinue, loading }) {
   return (
     <motion.section
       className="payment-method-picker glass-card"
@@ -38,23 +38,17 @@ export default function PaymentMethodPicker({ value, onChange, onContinue, loadi
       <div className="section-head compact">
         <div>
           <p className="eyebrow">Complete Payment</p>
-          <h2>Pilih QRIS atau tunai</h2>
-          <p className="section-copy">Data customer di bawah akan ikut terkirim ke backend dan ke admin untuk konfirmasi.</p>
+          <h2>Pilih metode pembayaran</h2>
         </div>
-      </div>
-
-      <div className="payment-customer-summary">
-        <div className="summary-row"><span>Nama</span><strong>{customer.name || '-'}</strong></div>
-        <div className="summary-row"><span>Nomor</span><strong>{customer.phone || '-'}</strong></div>
-        <div className="summary-row"><span>Email</span><strong>{customer.email || '-'}</strong></div>
       </div>
 
       <div className="payment-option-grid payment-option-grid-simple">
         {METHODS.map((method) => {
           const Icon = method.icon
           const checked = value === method.value
+
           return (
-            <label key={method.value} className={checked ? 'payment-option active' : 'payment-option'}>
+            <label key={method.value} className={checked ? 'payment-option payment-option-minimal active' : 'payment-option payment-option-minimal'}>
               <input
                 type="radio"
                 name="payment-method"
@@ -62,14 +56,14 @@ export default function PaymentMethodPicker({ value, onChange, onContinue, loadi
                 checked={checked}
                 onChange={() => onChange(method.value)}
               />
-              <span className="payment-option-icon" aria-hidden="true">
-                <Icon />
+              <span className="payment-option-left" aria-hidden="true">
+                <span className="payment-option-icon">
+                  <Icon />
+                </span>
               </span>
-              <span className="payment-option-copy">
-                <span className="payment-option-title">{method.title}</span>
-                <span className="payment-option-desc">{method.desc}</span>
-              </span>
-              <span className="payment-option-radio" aria-hidden="true">
+              <span className="sr-only">{method.title}</span>
+              <span className="payment-option-spacer" aria-hidden="true" />
+              <span className="payment-option-radio payment-option-radio-right" aria-hidden="true">
                 <span />
               </span>
             </label>
