@@ -134,7 +134,7 @@ export default function OrderPage() {
           </div>
         </motion.section>
 
-        <section className="order-items-panel glass-card">
+        <section className="order-items-panel glass-card order-items-panel-scroller">
           <div className="section-head compact">
             <div>
               <p className="eyebrow">Daftar pesanan</p>
@@ -148,7 +148,7 @@ export default function OrderPage() {
               <p>Belum ada item yang masuk ke keranjang.</p>
             </div>
           ) : (
-            <div className="order-scroll" role="list" aria-label="Daftar pesanan">
+            <div className="order-scroll order-scroll-list" role="list" aria-label="Daftar pesanan">
               {cart.map((item) => {
                 const lineTotal = Number(item.price || 0) * Number(item.qty || 0)
                 return (
