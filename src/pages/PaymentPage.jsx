@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import PaymentStatusCard from '../components/PaymentStatusCard'
@@ -40,6 +40,16 @@ export default function PaymentPage() {
   const [checkAttempts, setCheckAttempts] = useState(0)
   const [lastCheckedStatus, setLastCheckedStatus] = useState(String(initialOrder?.paymentStatus || initialOrder?.status || 'pending').toLowerCase())
 
+  const stableQrisRef = useRef(initialOrder?.qris || null)
+
+  const mergeStableOrder = (payload, fallback = order) => {
+    const merged = normalizeOrder(payload, fallback)
+    const qris = payload?.qris || fallback?.qris || stableQrisRef.current
+    if (qris) merged.qris = qris
+    if (merged.qris?.link_qris) stableQrisRef.current = merged.qris
+    return merged
+  }
+
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(timer)
@@ -59,7 +69,7 @@ export default function PaymentPage() {
       try {
         const latest = await getOrderStatus(orderId)
         if (!cancelled && latest?.orderId) {
-          const normalized = normalizeOrder(latest)
+          const normalized = mergeStableOrder(latest)
           const status = String(normalized.paymentStatus || normalized.status || 'pending').toLowerCase()
           setOrder(normalized)
           setLastCheckedStatus(status)
@@ -88,7 +98,7 @@ export default function PaymentPage() {
       try {
         const latest = await getOrderStatus(order.orderId)
         if (latest?.orderId) {
-          const normalized = normalizeOrder(latest, order)
+          const normalized = mergeStableOrder(latest, order)
           setOrder(normalized)
           writeLastOrder(normalized)
           const status = String(normalized.paymentStatus || normalized.status || 'pending').toLowerCase()
@@ -124,7 +134,7 @@ export default function PaymentPage() {
           try {
             const latest = await getOrderStatus(order.orderId)
             if (latest?.orderId) {
-              const normalized = normalizeOrder(latest, order)
+              const normalized = mergeStableOrder(latest, order)
               setOrder(normalized)
               writeLastOrder(normalized)
               const status = String(normalized.paymentStatus || normalized.status || 'pending').toLowerCase()
@@ -156,7 +166,7 @@ export default function PaymentPage() {
       setError('')
       try {
         const qris = await createQris({ orderId: order.orderId, total: order.total })
-        const nextOrder = normalizeOrder({
+        const nextOrder = mergeStableOrder({
           ...order,
           qris,
         }, order)
@@ -189,7 +199,7 @@ export default function PaymentPage() {
     try {
       const latest = await checkPayment(order.orderId)
       if (latest?.orderId) {
-        const normalized = normalizeOrder(latest, order)
+        const normalized = mergeStableOrder(latest, order)
         const status = String(normalized.paymentStatus || normalized.status || 'pending').toLowerCase()
         const previous = String(lastCheckedStatus || 'pending').toLowerCase()
 
@@ -222,7 +232,7 @@ export default function PaymentPage() {
     setError('')
     try {
       const qris = await createQris({ orderId: order.orderId, total: order.total })
-      const next = normalizeOrder({ ...order, qris }, order)
+      const next = mergeStableOrder({ ...order, qris }, order)
       setOrder(next)
       writeLastOrder(next)
     } catch (err) {

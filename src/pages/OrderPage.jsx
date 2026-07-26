@@ -138,7 +138,7 @@ export default function OrderPage() {
           <div className="section-head compact">
             <div>
               <p className="eyebrow">Daftar pesanan</p>
-              <h2>Geser ke kanan atau kiri</h2>
+              <h2>Scroll daftar pesanan</h2>
             </div>
           </div>
 
