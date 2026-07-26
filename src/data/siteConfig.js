@@ -1,5 +1,5 @@
 
-export const menuCategories = ['Semua', 'Paket', 'Makanan', 'Minuman', 'Lainnya']
+export const menuCategories = ['Semua', 'Makanan', 'Minuman', 'Lainnya']
 
 export const categories = menuCategories
 
