@@ -270,6 +270,22 @@ export default function PaymentPage() {
     }
   }
 
+  const retryQris = async () => {
+    if (!order?.orderId) return
+    setGenerating(true)
+    setError('')
+    try {
+      const qris = await createQris({ orderId: order.orderId, total: order.total })
+      const next = mergeStableOrder({ ...order, qris }, order)
+      setOrder(next)
+      writeLastOrder(next)
+    } catch (err) {
+      setError(err.message || 'Gagal generate QR.')
+    } finally {
+      setGenerating(false)
+    }
+  }
+
   const goSuccess = (payload) => {
     const method = String(payload.paymentMethod || payload.method || routeMethod || 'qris').toLowerCase()
     navigate(`/success/${method}/${payload.orderId}`, { replace: true, state: { order: payload } })
@@ -375,14 +391,11 @@ export default function PaymentPage() {
           qris={displayQris}
           expiresAt={isQris ? expiresAt : ''}
           countdown={qrisCountdown}
+          generating={generating}
+          qrisError={error}
+          onRetryQris={retryQris}
         >
-          {generating ? (
-            <div className="notice warning">
-              Sedang menyiapkan QRIS dari API, silakan tunggu sebentar.
-            </div>
-          ) : null}
-
-          {error ? <div className="notice error">{error}</div> : null}
+          {error && !(isQris && !displayQris?.link_qris) ? <div className="notice error">{error}</div> : null}
 
           <div className="notice warning">
             {attemptsLeft > 0
