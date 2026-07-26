@@ -31,12 +31,12 @@ export default function MenuPage() {
   }
 
   return (
-    <div className="app-shell">
+    <div className="app-shell app-shell-menu">
       <Header
         onGoMenu={() => document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
       />
 
-      <main className="container home-stack">
+      <main className="container home-stack menu-page-stack">
         <motion.div custom={0} variants={sectionVariants} initial="hidden" animate="show">
           <Hero />
         </motion.div>
