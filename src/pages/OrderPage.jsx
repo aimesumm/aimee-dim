@@ -73,7 +73,7 @@ export default function OrderPage() {
     }
 
     setPreferredMethod(selectedMethod)
-    navigate('/payment', { state: { method: selectedMethod } })
+    navigate('/payment-confirmation', { state: { method: selectedMethod } })
   }
 
   return (
