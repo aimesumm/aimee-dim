@@ -18,15 +18,15 @@ export default function ProfilePage() {
 
   return (
     <div className="app-shell">
-      <main className="container profile-stack">
-        <motion.div className="section-head compact" custom={0} variants={cardVariants} initial="hidden" animate="show">
+      <main className="container profile-stack profile-stack-final">
+        <motion.div className="section-head compact profile-head-row" custom={0} variants={cardVariants} initial="hidden" animate="show">
           <div>
-            <p className="eyebrow">Profile</p>
-            <h2>Profile</h2>
-            <p className="section-copy">Halaman akun dan kontak Aime Dimsum.</p>
+            <p className="eyebrow">Akun</p>
+            <h2>Akun & Kontak</h2>
+            <p className="section-copy">Halaman singkat untuk akun, sosial media, dan kontak AIME.</p>
           </div>
-          <button type="button" className="ghost-btn small" onClick={() => navigate('/')}>
-            Kembali
+          <button type="button" className="ghost-btn small profile-close-btn" onClick={() => navigate('/')}>
+            ×
           </button>
         </motion.div>
 
@@ -39,8 +39,8 @@ export default function ProfilePage() {
         >
           <div className="profile-hero-head">
             <div>
-              <p className="profile-hero-label">Account guest</p>
-              <h3>Akun tamu</h3>
+              <p className="profile-hero-label">Akun tamu</p>
+              <h3>Guest account</h3>
               <p className="section-copy">Masuk ke admin untuk mengelola menu dan data pesanan.</p>
             </div>
             <button type="button" className="primary-btn" onClick={() => navigate('/admin/login')}>
@@ -58,7 +58,7 @@ export default function ProfilePage() {
         >
           <div className="profile-section-head">
             <div>
-              <p className="profile-section-title">Akun sosial media</p>
+              <p className="profile-section-title">Sosial media</p>
               <h3>Ikuti kami</h3>
             </div>
           </div>
@@ -97,7 +97,7 @@ export default function ProfilePage() {
         >
           <div className="profile-section-head">
             <div>
-              <p className="profile-section-title">Contact us</p>
+              <p className="profile-section-title">Kontak</p>
               <h3>Hubungi kami</h3>
             </div>
           </div>

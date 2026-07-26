@@ -39,13 +39,20 @@ export default function PaymentPage() {
   const [now, setNow] = useState(Date.now())
   const [checkAttempts, setCheckAttempts] = useState(0)
   const [lastCheckedStatus, setLastCheckedStatus] = useState(String(initialOrder?.paymentStatus || initialOrder?.status || 'pending').toLowerCase())
+  const [qrisSnapshot, setQrisSnapshot] = useState(() => initialOrder?.qris || null)
 
   const stableQrisRef = useRef(initialOrder?.qris || null)
 
   const mergeStableOrder = (payload, fallback = order) => {
     const merged = normalizeOrder(payload, fallback)
     const qris = payload?.qris || fallback?.qris || stableQrisRef.current
-    if (qris) merged.qris = qris
+    if (qris) {
+      merged.qris = qris
+      if (qris.link_qris) {
+        stableQrisRef.current = qris
+        setQrisSnapshot(qris)
+      }
+    }
     if (merged.qris?.link_qris) stableQrisRef.current = merged.qris
     return merged
   }
@@ -161,7 +168,7 @@ export default function PaymentPage() {
     const ensureQris = async () => {
       if (!order?.orderId) return
       if ((routeMethod || '').toLowerCase() !== 'qris') return
-      if (order.qris?.link_qris) return
+      if (order.qris?.link_qris || qrisSnapshot?.link_qris || stableQrisRef.current?.link_qris) return
       setGenerating(true)
       setError('')
       try {
@@ -272,7 +279,8 @@ export default function PaymentPage() {
   }
 
   const isQris = (routeMethod || order.paymentMethod || order.method || '').toUpperCase() === 'QRIS'
-  const expiresAt = order.qris?.expiresAt || (order.createdAt ? new Date(new Date(order.createdAt).getTime() + QRIS_TTL_MS).toISOString() : '')
+  const displayQris = order.qris?.link_qris ? order.qris : qrisSnapshot || stableQrisRef.current || null
+  const expiresAt = displayQris?.expiresAt || (order.createdAt ? new Date(new Date(order.createdAt).getTime() + QRIS_TTL_MS).toISOString() : '')
   const qrisCountdown = expiresAt ? timeLeft(expiresAt, now) : ''
   const attemptsLeft = Math.max(0, 3 - checkAttempts)
 
@@ -294,13 +302,13 @@ export default function PaymentPage() {
                   <strong>Sedang membuat QRIS...</strong>
                   <p>Menunggu respons API converter QRIS.</p>
                 </div>
-              ) : order.qris?.link_qris ? (
+              ) : displayQris?.link_qris ? (
                 <div className="qris-preview">
-                  <img src={order.qris.link_qris} alt="QRIS pembayaran" className="qris-image" />
+                  <img src={displayQris.link_qris} alt="QRIS pembayaran" className="qris-image" />
                   <div className="qris-meta">
-                    <div className="summary-row"><span>Nominal</span><strong>{currency.format(Number(order.qris.nominal ?? order.total ?? 0))}</strong></div>
-                    <div className="summary-row"><span>Status API</span><strong>{order.qris.status || 'success'}</strong></div>
-                    <div className="summary-row"><span>Data convert</span><strong>{order.qris.converted_qris ? 'Tersimpan' : '-'}</strong></div>
+                    <div className="summary-row"><span>Nominal</span><strong>{currency.format(Number(displayQris.nominal ?? order.total ?? 0))}</strong></div>
+                    <div className="summary-row"><span>Status API</span><strong>{displayQris.status || 'success'}</strong></div>
+                    <div className="summary-row"><span>Data convert</span><strong>{displayQris.converted_qris ? 'Tersimpan' : '-'}</strong></div>
                     {qrisCountdown ? <div className="summary-row"><span>Expired</span><strong>{qrisCountdown}</strong></div> : null}
                   </div>
                 </div>
