@@ -32,7 +32,13 @@ export function normalizeOrder(payload, fallback = null) {
     paymentMethod: payload.paymentMethod || payload.method || fallback?.paymentMethod || fallback?.method || 'QRIS',
     method: payload.paymentMethod || payload.method || fallback?.method || 'QRIS',
     customerName: payload.customerName || payload.name || fallback?.customerName || fallback?.name || '',
+    name: payload.customerName || payload.name || fallback?.name || fallback?.customerName || '',
     customerPhone: payload.customerPhone || payload.phone || fallback?.customerPhone || fallback?.phone || '',
+    phone: payload.customerPhone || payload.phone || fallback?.phone || fallback?.customerPhone || '',
+    customerEmail: payload.customerEmail || payload.email || fallback?.customerEmail || fallback?.email || '',
+    email: payload.customerEmail || payload.email || fallback?.email || fallback?.customerEmail || '',
+    note: payload.note || payload.customerNote || fallback?.note || fallback?.customerNote || '',
+    customerNote: payload.customerNote || payload.note || fallback?.customerNote || fallback?.note || '',
     createdAt: payload.createdAt || payload.time || fallback?.createdAt || fallback?.time || new Date().toISOString(),
     time: payload.createdAt || payload.time || fallback?.time || new Date().toISOString(),
   }
