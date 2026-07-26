@@ -47,6 +47,17 @@ function normalizeNumber(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback
 }
 
+const MENU_CATEGORIES = ['Makanan', 'Minuman', 'Lainnya', 'Paket']
+
+function normalizeCategory(value) {
+  const raw = String(value || '').trim()
+  const title = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase()
+  if (MENU_CATEGORIES.includes(title)) return title
+  if (title === 'Dimsum') return 'Makanan'
+  return MENU_CATEGORIES.includes(raw) ? raw : 'Makanan'
+}
+
+
 function normalizeVariant(variant) {
   return {
     label: String(variant?.label || variant?.name || '').trim(),
@@ -64,7 +75,7 @@ function normalizeMenuItem(item) {
   return {
     id: String(item.id || '').trim() || createUuid(),
     name: String(item.name || '').trim(),
-    category: item.category === 'Minuman' ? 'Minuman' : 'Makanan',
+    category: normalizeCategory(item.category),
     price: normalizeNumber(item.price, 0),
     imageUrl: String(item.imageUrl || item.image_url || '').trim() || '/placeholder.png',
     imagePath: item.imagePath ?? item.image_path ?? null,
@@ -268,7 +279,7 @@ export async function createMenuItem(payload) {
     const localItem = upsertLocalMenuItem({
       id: createUuid(),
       name: payload.name,
-      category: payload.category,
+      category: normalizeCategory(payload.category),
       price: payload.price,
       imageUrl: payload.imageUrl,
       imagePath: payload.imagePath,

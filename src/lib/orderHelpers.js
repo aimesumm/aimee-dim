@@ -23,7 +23,8 @@ export function writeLastOrder(order) {
 export function normalizeOrder(payload, fallback = null) {
   if (!payload && fallback) return fallback
   if (!payload) return null
-  return {
+
+  const merged = {
     ...fallback,
     ...payload,
     paymentStatus: payload.paymentStatus || payload.status || fallback?.paymentStatus || 'pending',
@@ -35,4 +36,16 @@ export function normalizeOrder(payload, fallback = null) {
     createdAt: payload.createdAt || payload.time || fallback?.createdAt || fallback?.time || new Date().toISOString(),
     time: payload.createdAt || payload.time || fallback?.time || new Date().toISOString(),
   }
+
+  if (payload.qris !== undefined && payload.qris !== null) {
+    if (fallback?.qris && typeof payload.qris === 'object' && typeof fallback.qris === 'object') {
+      merged.qris = { ...fallback.qris, ...payload.qris }
+    } else {
+      merged.qris = payload.qris
+    }
+  } else if (fallback?.qris && merged.qris == null) {
+    merged.qris = fallback.qris
+  }
+
+  return merged
 }
