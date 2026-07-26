@@ -1,4 +1,3 @@
-
 export const menuCategories = ['Semua', 'Paket', 'Makanan', 'Minuman', 'Lainnya']
 
 export const categories = menuCategories
@@ -116,6 +115,14 @@ export function getSubtotal(items = []) {
   return items.reduce((sum, item) => sum + Number(item.price ?? 0) * Number(item.qty ?? item.quantity ?? 0), 0)
 }
 
+export function getBaseSubtotal(items = []) {
+  return items.reduce((sum, item) => sum + Number(item.basePrice ?? item.price ?? 0) * Number(item.qty ?? item.quantity ?? 0), 0)
+}
+
+export function getVariantSubtotal(items = []) {
+  return items.reduce((sum, item) => sum + Number(item.variantPrice ?? 0) * Number(item.qty ?? item.quantity ?? 0), 0)
+}
+
 export function formatItemVariant(item = {}) {
   const variantLabel = String(item.variantLabel || item.variant_name || '').trim()
   if (variantLabel) return `(${variantLabel})`
@@ -139,7 +146,9 @@ export function getOwnerOrderMessage(order = {}) {
     })
     .join('\n')
 
-  return `🍱 PESANAN BARU AIME-Dimsum\n\n🆔 Order ID:\n${order.orderId || '-'}\n\n👤 Nama Customer:\n${order.customerName || order.name || '-'}\n\n📱 Nomor Customer:\n${order.customerPhone || order.phone || '-'}\n\n🛒 Detail Pesanan:\n\n${items || '-'}\n\nJumlah Item:\n${getOrderItemsCount(order.items || [])}\n\n💰 Total:\n${currency.format(Number(order.total || 0))}\n\n💳 Metode Pembayaran:\n${getMethodLabel(order.paymentMethod || order.method)}\n\n📌 Status:\n${getStatusLabel(order.paymentStatus || order.status)}\n\n⏰ Waktu:\n${formatOrderTime(order.createdAt || order.time)}`
+  const note = String(order.note || order.customerNote || '').trim()
+
+  return `🍱 PESANAN BARU AIME-Dimsum\n\n🆔 Order ID:\n${order.orderId || '-'}\n\n👤 Nama Customer:\n${order.customerName || order.name || '-'}\n\n📱 Nomor Customer:\n${order.customerPhone || order.phone || '-'}\n\n✉️ Email Customer:\n${order.customerEmail || order.email || '-'}\n\n🛒 Detail Pesanan:\n\n${items || '-'}\n\n📝 Catatan Tambahan:\n${note || '-'}\n\nJumlah Item:\n${getOrderItemsCount(order.items || [])}\n\n💰 Total:\n${currency.format(Number(order.total || 0))}\n\n💳 Metode Pembayaran:\n${getMethodLabel(order.paymentMethod || order.method)}\n\n📌 Status:\n${getStatusLabel(order.paymentStatus || order.status)}\n\n⏰ Waktu:\n${formatOrderTime(order.createdAt || order.time)}`
 }
 
 export function getCustomerOrderMessage(order = {}) {
