@@ -1,5 +1,5 @@
 
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { categories } from '../data/siteConfig'
 import { useCart } from '../context/CartContext'
@@ -10,7 +10,6 @@ import AddMenuCard from './AddMenuCard'
 
 export default function MenuSection() {
   const [activeCategory, setActiveCategory] = useState('Semua')
-  const tabsRef = useRef(null)
   const { addItem } = useCart()
   const { items, loading } = useMenu()
   const { isAdmin } = useAdminAuth()
@@ -21,18 +20,6 @@ export default function MenuSection() {
       ? items
       : items.filter((item) => item.category === activeCategory)
   }, [activeCategory, items])
-
-
-  const handleCategoryWheel = (event) => {
-  const el = tabsRef.current
-  if (!el) return
-
-  const delta = Math.abs(event.deltaY) > Math.abs(event.deltaX) ? event.deltaY : event.deltaX
-  if (!delta) return
-
-  el.scrollLeft += delta
-  event.preventDefault()
-}
 
   const handleAdd = (item) => {
     if (item.hasVariantPage) {
@@ -54,22 +41,13 @@ export default function MenuSection() {
 
   return (
     <section className="menu-section" id="menu">
-      <div className="section-head menu-section-head">
+      <div className="section-head">
         <div>
           <p className="eyebrow">Menu utama</p>
           <h2>Pilihan makanan, minuman, paket, dan lainnya AIME-Dimsum</h2>
           <p className="section-copy">Pilih menu favoritmu, tambahkan ke keranjang, dan pesan dengan mudah.</p>
         </div>
-      </div>
-
-      <div className="category-scroll-card glass-card">
-        <div
-            ref={tabsRef}
-            className="tabs scrollable category-tabs"
-            role="tablist"
-            aria-label="Kategori menu"
-            onWheel={handleCategoryWheel}
-          >
+        <div className="tabs scrollable">
           {categories.map((cat) => (
             <button
               key={cat}
