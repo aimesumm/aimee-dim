@@ -72,8 +72,9 @@ export default function MenuPage() {
         </span>
 
         <span className="floating-checkout-copy">
-          <span>Checkout</span>
+          <span className="floating-checkout-title">Checkout</span>
           <strong>{currency.format(total)}</strong>
+          <small>{itemCount} item{itemCount > 1 ? 's' : ''}</small>
         </span>
       </motion.button>
 

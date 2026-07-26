@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import CustomerDetailsCard from '../components/CustomerDetailsCard'
-import PaymentStatusCard from '../components/PaymentStatusCard'
 import PaymentMethodPicker from '../components/PaymentMethodPicker'
+import PaymentConfirmationCard from '../components/PaymentConfirmationCard'
 import { checkPayment, createOrder, createQris, getOrderStatus } from '../services/paymentGateway'
-import { currency, getStatusLabel } from '../data/siteConfig'
 import { useCart } from '../context/CartContext'
 import { useOrderDraft } from '../context/OrderDraftContext'
 import { supabaseBrowser } from '../lib/supabaseClient'
@@ -45,8 +44,6 @@ export default function PaymentPage() {
   const [error, setError] = useState('')
   const [now, setNow] = useState(Date.now())
   const [checkAttempts, setCheckAttempts] = useState(0)
-  const [lastCheckedStatus, setLastCheckedStatus] = useState(String(initialOrder?.paymentStatus || initialOrder?.status || 'pending').toLowerCase())
-  const [qrisSnapshot, setQrisSnapshot] = useState(() => initialOrder?.qris || null)
   const [selectedMethod, setSelectedMethod] = useState(() => String(routeMethod || initialOrder?.paymentMethod || initialOrder?.method || preferredMethod || 'QRIS').toUpperCase())
 
   const stableQrisRef = useRef(initialOrder?.qris || null)
@@ -56,19 +53,17 @@ export default function PaymentPage() {
     const qris = payload?.qris || fallback?.qris || stableQrisRef.current
     if (qris) {
       merged.qris = qris
-      if (qris.link_qris) {
-        stableQrisRef.current = qris
-        setQrisSnapshot(qris)
-      }
+      if (qris.link_qris) stableQrisRef.current = qris
     }
-    if (merged.qris?.link_qris) stableQrisRef.current = merged.qris
     return merged
   }
 
-  useEffect(() => {
-    setSelectedMethod(String(routeMethod || order?.paymentMethod || order?.method || selectedMethod || preferredMethod || 'QRIS').toUpperCase())
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [routeMethod, order?.orderId])
+  const currentMethod = String(order?.paymentMethod || order?.method || selectedMethod || routeMethod || 'QRIS').toUpperCase()
+  const isQris = currentMethod === 'QRIS'
+  const displayQris = order?.qris?.link_qris ? order.qris : stableQrisRef.current || order?.qris || null
+  const expiresAt = displayQris?.expiresAt || (order?.createdAt ? new Date(new Date(order.createdAt).getTime() + QRIS_TTL_MS).toISOString() : '')
+  const qrisCountdown = isQris ? timeLeft(expiresAt, now) : ''
+  const attemptsLeft = Math.max(0, 3 - checkAttempts)
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000)
@@ -78,15 +73,11 @@ export default function PaymentPage() {
   useEffect(() => {
     if (draftMode) return
     if (!orderId || bootstrapping) return
-    if (!order) {
-      navigate('/order', { replace: true })
-    }
+    if (!order) navigate('/order', { replace: true })
   }, [draftMode, order, orderId, bootstrapping, navigate])
 
   useEffect(() => {
-    if (draftMode && !cart.length) {
-      navigate('/order', { replace: true })
-    }
+    if (draftMode && !cart.length) navigate('/order', { replace: true })
   }, [draftMode, cart.length, navigate])
 
   useEffect(() => {
@@ -100,7 +91,6 @@ export default function PaymentPage() {
           const normalized = mergeStableOrder(latest)
           const status = String(normalized.paymentStatus || normalized.status || 'pending').toLowerCase()
           setOrder(normalized)
-          setLastCheckedStatus(status)
           writeLastOrder(normalized)
           setSelectedMethod(String(normalized.paymentMethod || normalized.method || routeMethod || preferredMethod || 'QRIS').toUpperCase())
           if (status !== 'pending') {
@@ -131,7 +121,6 @@ export default function PaymentPage() {
           setOrder(normalized)
           writeLastOrder(normalized)
           const status = String(normalized.paymentStatus || normalized.status || 'pending').toLowerCase()
-          setLastCheckedStatus(status)
           if (status !== 'pending') {
             const method = String(normalized.paymentMethod || normalized.method || routeMethod || 'qris').toLowerCase()
             navigate(`/success/${method}/${normalized.orderId}`, { replace: true, state: { order: normalized } })
@@ -167,7 +156,6 @@ export default function PaymentPage() {
               setOrder(normalized)
               writeLastOrder(normalized)
               const status = String(normalized.paymentStatus || normalized.status || 'pending').toLowerCase()
-              setLastCheckedStatus(status)
               if (status !== 'pending') {
                 const method = String(normalized.paymentMethod || normalized.method || routeMethod || 'qris').toLowerCase()
                 navigate(`/success/${method}/${normalized.orderId}`, { replace: true, state: { order: normalized } })
@@ -189,16 +177,14 @@ export default function PaymentPage() {
   useEffect(() => {
     const ensureQris = async () => {
       if (!order?.orderId) return
-      if ((selectedMethod || routeMethod || '').toUpperCase() !== 'QRIS') return
-      if (order.qris?.link_qris || qrisSnapshot?.link_qris || stableQrisRef.current?.link_qris) return
+      if (currentMethod !== 'QRIS') return
+      if (order.qris?.link_qris || stableQrisRef.current?.link_qris) return
+
       setGenerating(true)
       setError('')
       try {
         const qris = await createQris({ orderId: order.orderId, total: order.total })
-        const nextOrder = mergeStableOrder({
-          ...order,
-          qris,
-        }, order)
+        const nextOrder = mergeStableOrder({ ...order, qris }, order)
         setOrder(nextOrder)
         writeLastOrder(nextOrder)
         setBootstrapping(false)
@@ -210,7 +196,7 @@ export default function PaymentPage() {
     }
 
     ensureQris()
-  }, [order?.orderId, routeMethod, selectedMethod])
+  }, [order?.orderId, currentMethod])
 
   const submitDraftPayment = async () => {
     if (!cart.length) {
@@ -262,12 +248,12 @@ export default function PaymentPage() {
             orderId: created.orderId,
             total: created.total,
           })
-          nextOrder = normalizeOrder({
+          nextOrder = mergeStableOrder({
             ...created,
             qris,
           }, created)
         } catch {
-          // user can retry on status page
+          // user can retry on the confirm page
         }
       }
 
@@ -297,24 +283,22 @@ export default function PaymentPage() {
     if (!order?.orderId) return
     setChecking(true)
     setError('')
+
     try {
       const latest = await checkPayment(order.orderId)
       if (latest?.orderId) {
         const normalized = mergeStableOrder(latest, order)
         const status = String(normalized.paymentStatus || normalized.status || 'pending').toLowerCase()
-        const previous = String(lastCheckedStatus || 'pending').toLowerCase()
 
         setOrder(normalized)
         writeLastOrder(normalized)
-        setLastCheckedStatus(status)
 
         if (status !== 'pending') {
           goSuccess(normalized)
           return
         }
 
-        const hasChanged = status !== previous
-        const nextAttempts = hasChanged ? checkAttempts : checkAttempts + 1
+        const nextAttempts = checkAttempts + 1
         setCheckAttempts(nextAttempts)
         if (nextAttempts >= 3) {
           goFailed(normalized)
@@ -324,22 +308,6 @@ export default function PaymentPage() {
       setError(err.message || 'Gagal mengecek status pembayaran.')
     } finally {
       setChecking(false)
-    }
-  }
-
-  const retryQris = async () => {
-    if (!order?.orderId) return
-    setGenerating(true)
-    setError('')
-    try {
-      const qris = await createQris({ orderId: order.orderId, total: order.total })
-      const next = mergeStableOrder({ ...order, qris }, order)
-      setOrder(next)
-      writeLastOrder(next)
-    } catch (err) {
-      setError(err.message || 'Gagal generate QR.')
-    } finally {
-      setGenerating(false)
     }
   }
 
@@ -385,7 +353,7 @@ export default function PaymentPage() {
         <main className="container payment-gateway-page">
           <div className="payment-error-box">
             <strong>Order belum ditemukan</strong>
-            <p>{bootstrapError || 'Silakan kembali ke checkout dan coba lagi.'}</p>
+            <p>{bootstrapError || 'Silakan kembali ke order dan coba lagi.'}</p>
             <button className="primary-btn" type="button" onClick={() => navigate('/order', { replace: true })}>
               Kembali ke Order
             </button>
@@ -395,64 +363,33 @@ export default function PaymentPage() {
     )
   }
 
-  const isQris = (routeMethod || order.paymentMethod || order.method || selectedMethod || '').toUpperCase() === 'QRIS'
-  const displayQris = order.qris?.link_qris ? order.qris : qrisSnapshot || stableQrisRef.current || null
-  const expiresAt = displayQris?.expiresAt || (order.createdAt ? new Date(new Date(order.createdAt).getTime() + QRIS_TTL_MS).toISOString() : '')
-  const qrisCountdown = expiresAt ? timeLeft(expiresAt, now) : ''
-  const attemptsLeft = Math.max(0, 3 - checkAttempts)
-
   return (
     <div className="app-shell">
       <main className="container payment-gateway-page">
-        <PaymentStatusCard
+        <PaymentConfirmationCard
           order={order}
-          variant={isQris ? 'qris' : 'cash'}
-          onCheck={onCheck}
+          isQris={isQris}
+          attemptsLeft={attemptsLeft}
           checking={checking}
-          statusText={getStatusLabel(order.paymentStatus || order.status)}
+          onConfirm={onCheck}
+          qris={displayQris}
+          expiresAt={isQris ? expiresAt : ''}
+          countdown={qrisCountdown}
         >
-          {isQris ? (
-            <div className="payment-body-grid">
-              {generating ? (
-                <div className="payment-loader-box">
-                  <div className="loading-spinner" />
-                  <strong>Sedang membuat QRIS...</strong>
-                  <p>Menunggu respons API converter QRIS.</p>
-                </div>
-              ) : displayQris?.link_qris ? (
-                <div className="qris-preview">
-                  <img src={displayQris.link_qris} alt="QRIS pembayaran" className="qris-image" />
-                  <div className="qris-meta">
-                    <div className="summary-row"><span>Nominal</span><strong>{currency.format(Number(displayQris.nominal ?? order.total ?? 0))}</strong></div>
-                    <div className="summary-row"><span>Status API</span><strong>{displayQris.status || 'success'}</strong></div>
-                    <div className="summary-row"><span>Data convert</span><strong>{displayQris.converted_qris ? 'Tersimpan' : '-'}</strong></div>
-                    {qrisCountdown ? <div className="summary-row"><span>Expired</span><strong>{qrisCountdown}</strong></div> : null}
-                  </div>
-                </div>
-              ) : (
-                <div className="payment-error-box">
-                  <strong>Gagal generate QRIS</strong>
-                  <p>{error || 'QR belum tersedia.'}</p>
-                  <button className="primary-btn" type="button" onClick={retryQris} disabled={generating}>
-                    Coba Lagi
-                  </button>
-                </div>
-              )}
+          {generating ? (
+            <div className="notice warning">
+              Sedang menyiapkan QRIS dari API, silakan tunggu sebentar.
             </div>
-          ) : (
-            <div className="cash-panel-copy">
-              <div className="cash-icon">💵</div>
-              <p>Silakan lakukan pembayaran kepada kasir.</p>
-              <p>Status saat ini: {getStatusLabel(order.paymentStatus || order.status)}</p>
-            </div>
-          )}
+          ) : null}
 
           {error ? <div className="notice error">{error}</div> : null}
 
           <div className="notice warning">
-            {attemptsLeft > 0 ? `🟡 Menunggu Konfirmasi Owner • sisa cek manual: ${attemptsLeft}` : '🟡 Menunggu Konfirmasi Owner'}
+            {attemptsLeft > 0
+              ? `Menunggu konfirmasi admin • sisa percobaan ${attemptsLeft}`
+              : 'Percobaan habis, sistem akan diarahkan ke halaman gagal jika status masih belum berubah.'}
           </div>
-        </PaymentStatusCard>
+        </PaymentConfirmationCard>
       </main>
     </div>
   )
