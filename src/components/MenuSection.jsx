@@ -26,7 +26,7 @@ function uniqCategoryList(items) {
 }
 
 export default function MenuSection() {
-  const [activeCategory, setActiveCategory] = useState('kon')
+  const [activeCategory, setActiveCategory] = useState('Semua')
   const { addItem } = useCart()
   const { items, loading } = useMenu()
   const { isAdmin } = useAdminAuth()
@@ -79,40 +79,38 @@ export default function MenuSection() {
       <div className="menu-section-head">
         <div className="menu-section-copy">
           <p className="eyebrow">Pilih kategori</p>
-        </div>
-
-        <div className="menu-active-chip" aria-live="polite">
-          <span>Kategori aktif</span>
-          <strong>{activeCategory}</strong>
+          <h2>Geser kategori untuk melihat menu</h2>
         </div>
       </div>
 
       <div className="category-toolbar glass-card">
-        <div className="category-toolbar-hint">
-          <span className="category-toolbar-dot" aria-hidden="true" />
-          <span>Swipe hanya di area kategori</span>
+        <div className="menu-active-chip menu-active-chip-inline" aria-live="polite">
+          <span>Kategori aktif</span>
+          <strong>{activeCategory}</strong>
         </div>
 
-        <div className="tabs scrollable menu-tabs" role="tablist" aria-label="Kategori menu">
-          {categoryList.map((cat) => (
-            <button
-              key={cat}
-              ref={(node) => {
-                if (node) {
-                  tabRefs.current.set(cat, node)
-                } else {
-                  tabRefs.current.delete(cat)
-                }
-              }}
-              className={activeCategory === cat ? 'tab active' : 'tab'}
-              onClick={() => setActiveCategory(cat)}
-              type="button"
-              role="tab"
-              aria-selected={activeCategory === cat}
-            >
-              {cat}
-            </button>
-          ))}
+        <div className="menu-tabs-shell">
+          <div className="tabs scrollable menu-tabs" role="tablist" aria-label="Kategori menu">
+            {categoryList.map((cat) => (
+              <button
+                key={cat}
+                ref={(node) => {
+                  if (node) {
+                    tabRefs.current.set(cat, node)
+                  } else {
+                    tabRefs.current.delete(cat)
+                  }
+                }}
+                className={activeCategory === cat ? 'tab active' : 'tab'}
+                onClick={() => setActiveCategory(cat)}
+                type="button"
+                role="tab"
+                aria-selected={activeCategory === cat}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
