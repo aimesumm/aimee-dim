@@ -33,8 +33,7 @@ export default function MenuPage() {
   const { preferredMethod } = useOrderDraft()
 
   const subtotal = getSubtotal(cart)
-  const serviceFee = cart.length ? 2000 : 0
-  const total = subtotal + serviceFee
+  const total = subtotal
   const itemCount = cart.reduce((sum, item) => sum + Number(item.qty || 0), 0)
 
   const goCheckout = () => {

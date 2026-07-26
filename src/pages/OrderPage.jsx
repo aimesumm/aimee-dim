@@ -25,8 +25,7 @@ export default function OrderPage() {
   const [error, setError] = useState('')
 
   const subtotal = useMemo(() => getSubtotal(cart), [cart])
-  const serviceFee = cart.length ? 2000 : 0
-  const total = subtotal + serviceFee
+  const total = subtotal
   const itemCount = getOrderItemsCount(cart)
 
   const buildItems = () => cart.map((item) => ({
