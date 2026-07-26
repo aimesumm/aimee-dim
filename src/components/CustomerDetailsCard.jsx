@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { motion } from 'framer-motion'
 import { useOrderDraft } from '../context/OrderDraftContext'
@@ -16,9 +15,9 @@ export default function CustomerDetailsCard() {
     >
       <div className="section-head compact">
         <div>
-          <p className="eyebrow">Data pesanan</p>
-          <h2>Nama dan kontak pelanggan</h2>
-          <p className="section-copy">Form ini dibuat ringkas agar nyaman digunakan di layar kecil.</p>
+          <p className="eyebrow">Customer information</p>
+          <h2>Nama, nomor, email, dan catatan</h2>
+          <p className="section-copy">Data ini akan ikut terkirim ke backend dan ke pesan admin untuk konfirmasi pesanan.</p>
         </div>
       </div>
 
@@ -42,11 +41,21 @@ export default function CustomerDetailsCard() {
         </label>
 
         <label className="field field-full">
-          <span>Catatan</span>
+          <span>Email</span>
+          <input
+            type="email"
+            value={customer.email}
+            onChange={(event) => setCustomer((prev) => ({ ...prev, email: event.target.value }))}
+            placeholder="nama@email.com"
+          />
+        </label>
+
+        <label className="field field-full">
+          <span>Add another notes</span>
           <input
             value={customer.note}
             onChange={(event) => setCustomer((prev) => ({ ...prev, note: event.target.value }))}
-            placeholder="Tambah catatan untuk owner"
+            placeholder="Tambah catatan tambahan untuk admin"
           />
         </label>
       </div>
