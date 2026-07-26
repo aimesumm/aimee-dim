@@ -39,6 +39,7 @@ export default function PaymentMethodPicker({ value, onChange, onContinue, loadi
         <div>
           <p className="eyebrow">Complete Payment</p>
           <h2>Pilih metode pembayaran</h2>
+          <p className="section-copy">Setelah lanjut, halaman akan berubah ke konfirmasi pesanan.</p>
         </div>
       </div>
 
@@ -72,7 +73,7 @@ export default function PaymentMethodPicker({ value, onChange, onContinue, loadi
       </div>
 
       <button className="primary-btn checkout-continue" type="button" onClick={onContinue} disabled={loading}>
-        {loading ? 'Memproses...' : 'Complete Payment'}
+        {loading ? 'Memproses...' : 'Continue Complete Payment'}
       </button>
     </motion.section>
   )
