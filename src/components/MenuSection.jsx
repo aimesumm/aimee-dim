@@ -26,7 +26,7 @@ function uniqCategoryList(items) {
 }
 
 export default function MenuSection() {
-  const [activeCategory, setActiveCategory] = useState('Semua')
+  const [activeCategory, setActiveCategory] = useState('kon')
   const { addItem } = useCart()
   const { items, loading } = useMenu()
   const { isAdmin } = useAdminAuth()
@@ -79,7 +79,6 @@ export default function MenuSection() {
       <div className="menu-section-head">
         <div className="menu-section-copy">
           <p className="eyebrow">Pilih kategori</p>
-          <h2>Geser kategori untuk melihat menu</h2>
         </div>
 
         <div className="menu-active-chip" aria-live="polite">
