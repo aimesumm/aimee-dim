@@ -95,8 +95,8 @@ export default function PaymentConfirmationCard({
 
       <div className="confirm-customer-box">
         <div className="summary-row"><span>Customer information</span><strong>{order?.customerName || order?.name || '-'}</strong></div>
-        <div className="summary-row"><span>Nomor WhatsApp</span><strong>{order?.customerPhone || order?.phone || '-'}</strong></div>
-        <div className="summary-row"><span>Email</span><strong>{order?.customerEmail || order?.email || '-'}</strong></div>
+        <div className="summary-row"><span>Nomor WhatsApp</span><strong>{order?.customerPhone || order?.customer_phone || order?.phone || order?.whatsapp || '-'}</strong></div>
+        <div className="summary-row"><span>Email</span><strong>{order?.customerEmail || order?.customer_email || order?.email || '-'}</strong></div>
         <div className="summary-row"><span>Catatan</span><strong>{order?.note || order?.customerNote || '-'}</strong></div>
       </div>
 
