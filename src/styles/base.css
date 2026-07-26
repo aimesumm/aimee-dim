@@ -551,59 +551,6 @@ a { color: inherit; }
   overscroll-behavior-x: contain;
 }
 
-/* Card khusus untuk baris kategori: SELURUH tombol kategori berada di dalam
-   satu container scroll horizontal. Container ini yang digeser, BUKAN grid menu.
-   Struktur dan class ini murni tampilan — logic filter (activeCategory, onClick,
-   items.filter) di MenuSection.jsx tidak diubah sama sekali. */
-.category-tabs-card {
-  width: 100%;
-  background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.82));
-  border: 1px solid rgba(124, 31, 53, 0.14);
-  box-shadow: var(--shadow-soft);
-  border-radius: var(--radius-sm);
-  padding: 4px 0;
-  margin: 4px 0 18px;
-  overflow: hidden;
-}
-
-.category-tabs-card .tabs.scrollable {
-  display: flex;
-  flex-wrap: nowrap;
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
-  margin: 0;
-  padding: 10px 16px 12px;
-  cursor: grab;
-  user-select: none;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
-  scrollbar-width: thin;
-}
-
-.category-tabs-card .tabs.scrollable:active {
-  cursor: grabbing;
-}
-
-/* Tombol kategori tidak boleh mengecil atau turun baris. */
-.category-tabs-card .tab {
-  flex: 0 0 auto;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-@media (max-width: 720px) {
-  .category-tabs-card {
-    margin: 2px 0 14px;
-    border-radius: 20px;
-  }
-
-  .category-tabs-card .tabs.scrollable {
-    padding: 8px 14px 10px;
-  }
-}
-
 .tabs.scrollable::-webkit-scrollbar,
 .variant-scroll::-webkit-scrollbar,
 .order-scroll::-webkit-scrollbar {
@@ -1392,7 +1339,7 @@ a { color: inherit; }
 .order-scroll {
   display: grid;
   gap: 12px;
-  max-height: min(420px, 46vh);
+  max-height: 420px;
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 6px;
@@ -1516,8 +1463,9 @@ a { color: inherit; }
     height: 68px;
   }
 
-  .order-scroll {
-    max-height: min(360px, 42vh);
+  .order-item-card {
+    min-width: 220px;
+    max-width: 220px;
   }
 
   .payment-option {
@@ -1540,17 +1488,7 @@ a { color: inherit; }
   display: grid;
   gap: 10px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(180deg, #202020, #151515);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.32);
-  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.menu-card-v2:hover {
-  transform: translateY(-4px);
-  background: linear-gradient(180deg, #272727, #1a1a1a);
-  border-color: rgba(197, 59, 57, 0.4);
-  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.42);
+  transition: transform 0.2s ease;
 }
 
 .menu-card-v2-image {
@@ -1558,8 +1496,8 @@ a { color: inherit; }
   width: 100%;
   aspect-ratio: 1 / 1;
   border-radius: 18px;
-  background: linear-gradient(180deg, #262626, #1c1c1c);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255, 228, 237, .96));
+  border: 1px solid rgba(124, 31, 53, 0.12);
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -1579,10 +1517,6 @@ a { color: inherit; }
   position: absolute;
   top: 8px;
   left: 8px;
-  background: linear-gradient(180deg, var(--accent-2), var(--accent));
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
 }
 
 .menu-card-v2-body {
@@ -1595,13 +1529,11 @@ a { color: inherit; }
   margin: 0;
   font-size: 0.98rem;
   line-height: 1.3;
-  color: #f5f2f0;
 }
 
 .menu-card-v2-price {
-  color: var(--accent-2);
+  color: var(--muted-strong);
   font-size: 0.95rem;
-  font-weight: 700;
 }
 
 .menu-card-v2-add {
@@ -1611,14 +1543,14 @@ a { color: inherit; }
   font-weight: 800;
   color: #fff;
   background: linear-gradient(180deg, var(--accent-2), var(--accent));
-  box-shadow: 0 12px 24px rgba(124, 31, 53, 0.4);
+  box-shadow: 0 12px 24px rgba(124, 31, 53, 0.28);
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .menu-card-v2-add:hover {
   transform: scale(1.03);
-  box-shadow: 0 16px 30px rgba(124, 31, 53, 0.5);
+  box-shadow: 0 16px 30px rgba(124, 31, 53, 0.34);
 }
 
 .menu-card-v2-add:active {
@@ -2311,5 +2243,136 @@ a { color: inherit; }
 
   .admin-variant-index {
     grid-row: 1;
+  }
+}
+
+
+/* ---------------------------------------------------------------- */
+/* Revisi UI final: kategori, order scroller, dan tema menu gelap    */
+/* ---------------------------------------------------------------- */
+
+.menu-section-head {
+  margin-bottom: 14px;
+}
+
+.category-scroll-card {
+  padding: 14px 16px 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.category-tabs {
+  width: 100%;
+  align-items: center;
+  padding: 2px 4px 6px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.category-tabs .tab {
+  flex: 0 0 auto;
+}
+
+.category-scroll-card .tabs.scrollable {
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+.order-items-panel-scroller {
+  display: grid;
+  gap: 14px;
+}
+
+.order-scroll-list {
+  max-height: min(52vh, 480px);
+  padding: 2px 6px 10px 2px;
+  scroll-behavior: smooth;
+}
+
+.order-scroll-list > * {
+  min-width: 0;
+}
+
+.menu-card,
+.menu-card-v2 {
+  background: linear-gradient(180deg, #1a1a1a 0%, #111111 100%);
+  border: 1px solid rgba(68, 68, 68, 0.95);
+  color: #ffffff;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
+}
+
+.menu-card:hover,
+.menu-card-v2:hover {
+  background: linear-gradient(180deg, #202020 0%, #161616 100%);
+  border-color: rgba(95, 95, 95, 0.95);
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.38);
+}
+
+.menu-card p,
+.menu-card-v2 p,
+.menu-card-v2-body h3,
+.menu-card h3 {
+  color: #ffffff;
+}
+
+.menu-card-v2-image,
+.menu-avatar {
+  background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+  border: 1px solid rgba(82, 82, 82, 0.55);
+}
+
+.menu-card-v2-price {
+  color: #c84a5b;
+  font-weight: 700;
+}
+
+.menu-badge {
+  background: rgba(200, 74, 91, 0.16);
+  color: #ffcfdb;
+  border: 1px solid rgba(200, 74, 91, 0.24);
+}
+
+.menu-card-v2-add,
+.add-btn {
+  background: linear-gradient(180deg, #c84a5b 0%, #8f183d 100%);
+  color: #fff;
+  border: 1px solid rgba(200, 74, 91, 0.55);
+  box-shadow: 0 12px 24px rgba(143, 24, 61, 0.28);
+}
+
+.menu-card-v2-add:hover,
+.add-btn:hover {
+  background: linear-gradient(180deg, #d85b6c 0%, #9c2145 100%);
+  border-color: rgba(255, 193, 204, 0.28);
+}
+
+.menu-card-v2-add:disabled,
+.add-btn:disabled {
+  opacity: .6;
+}
+
+.menu-card-v2-body small,
+.menu-card-v2-body span,
+.menu-card p,
+.menu-card small {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.menu-card-v2-image .menu-badge {
+  top: 10px;
+  left: 10px;
+}
+
+.menu-card-v2-image img {
+  border-radius: inherit;
+}
+
+@media (max-width: 768px) {
+  .category-scroll-card {
+    padding: 12px 12px 10px;
+  }
+
+  .order-scroll-list {
+    max-height: min(48vh, 420px);
   }
 }
