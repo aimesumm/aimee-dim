@@ -1,19 +1,19 @@
 # AIME-Dimsum
 
-Project ini dirapikan supaya layout lebih klasik, elegan, dan nyaman di mobile, tanpa mengubah alur backend utama.
+Project ini dirapikan supaya alur menu, admin, dan pembayaran tetap stabil di mobile, dengan tema maroon yang lebih tegas.
 
 ## Alur utama
 
 Home → Menu → Keranjang → Data pelanggan → Checkout → QRIS / Tunai → Status pembayaran → Konfirmasi owner → WhatsApp setelah berhasil
 
-## Yang dirapikan
+## Fitur utama yang tersedia
 
-- Struktur tampilan home dibuat lebih rapi dan konsisten
-- Layout mobile diperhalus agar tidak pecah di Android dan iPhone
-- Animasi transisi ditingkatkan dengan Framer Motion
-- Scroll dibuat lebih halus dengan Lenis
-- Hero diberi animasi sinematik dengan GSAP
-- File yang tidak terpakai dibuang agar project lebih ringan
+- Menu utama punya filter kategori: Semua, Makanan, Minuman, Lainnya, dan Paket
+- Admin dashboard bisa tambah, edit, dan hapus menu
+- Form admin mendukung kategori menu baru saat membuat atau mengubah item
+- Tema warna diganti dari sakura menjadi merah maroon
+- Alur QRIS dibuat lebih stabil supaya gambar tidak cepat hilang saat data order di-refresh
+- File JSX yang tidak dipakai sudah dibersihkan agar project lebih ringan
 
 ## Backend yang tetap dipakai
 
@@ -29,32 +29,61 @@ Folder backend tetap menggunakan API dan Supabase yang sudah ada:
 - `api/update-order-status.js`
 - `api/telegram-webhook.js`
 
-Tidak ada perubahan fungsi backend inti. Yang berubah hanya tampilan frontend dan struktur file yang tidak penting.
+Tidak ada perubahan struktur backend inti. Yang diperbarui terutama adalah frontend, normalisasi kategori menu, dan penyimpanan QRIS agar tidak mudah tertimpa refresh data.
 
 ## Struktur frontend
 
-- `src/pages/Home.jsx` — halaman utama
-- `src/pages/Checkout.jsx` — pemilihan metode pembayaran
-- `src/pages/PaymentGateway.jsx` — halaman QRIS / tunai dan status
+- `src/pages/MenuPage.jsx` — halaman utama
+- `src/pages/OrderPage.jsx` — checkout
+- `src/pages/PaymentPage.jsx` — halaman QRIS / tunai dan status
 - `src/pages/PaymentSuccess.jsx` — halaman berhasil
 - `src/components/*` — komponen UI yang dipakai bersama
 - `src/styles/base.css` — seluruh styling utama
 
 ## Environment variables
 
-### Frontend
-- `VITE_OWNER_WHATSAPP`
-- `VITE_TELEGRAM_BOT_USERNAME`
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
+Buat file `.env` di root project lalu isi variabel berikut sesuai kebutuhan.
 
-### Backend
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `QRIS_DATA`
-- `TELEGRAM_BOT_TOKEN`
-- `TELEGRAM_CHAT_ID`
-- `APP_BASE_URL` atau `SITE_URL`
+### Frontend
+```env
+VITE_OWNER_WHATSAPP=628xxxxxxxxxx
+VITE_CONTACT_EMAIL=admin@domain.com
+VITE_TELEGRAM_BOT_USERNAME=namabot
+VITE_INSTAGRAM_HANDLE=@aime_dimsum
+VITE_INSTAGRAM_URL=https://instagram.com/aime_dimsum
+VITE_TIKTOK_HANDLE=@aime_dimsum
+VITE_TIKTOK_URL=https://tiktok.com/@aime_dimsum
+VITE_FACEBOOK_HANDLE=AIME Dimsum
+VITE_FACEBOOK_URL=https://facebook.com/aime_dimsum
+VITE_SUPABASE_URL=https://xxxxx.supabase.co
+VITE_SUPABASE_ANON_KEY=your_public_anon_key
+```
+
+### Backend / serverless
+```env
+SUPABASE_URL=https://xxxxx.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+ADMIN_PASSWORD=your_admin_password
+QRIS_DATA=your_qris_static_payload
+TELEGRAM_BOT_TOKEN=123456:ABCDEF
+TELEGRAM_CHAT_ID=123456789
+APP_BASE_URL=https://your-domain.com
+SITE_URL=https://your-domain.com
+```
+
+Catatan:
+- `APP_BASE_URL` atau `SITE_URL` dipakai untuk webhook Telegram.
+- `QRIS_DATA` wajib diisi agar generator QRIS bisa membuat kode pembayaran.
+- `SUPABASE_SERVICE_ROLE_KEY` hanya untuk backend. Jangan taruh key ini di frontend.
+
+## Cara menyiapkan environment
+
+1. Buat file `.env` di root project.
+2. Isi variabel frontend dan backend sesuai blok di atas.
+3. Pastikan Supabase URL dan key sudah benar.
+4. Pastikan `ADMIN_PASSWORD` sama dengan password yang ingin dipakai login admin.
+5. Jalankan project dengan `npm install` lalu `npm run dev`.
+6. Jika deploy ke Vercel atau server lain, masukkan env yang sama ke dashboard hosting.
 
 ## Supabase table
 
@@ -76,57 +105,32 @@ Pastikan tabel `orders` memiliki kolom minimal:
 - `created_at`
 - `updated_at`
 
-## Catatan penghubungan backend
+Untuk menu, pastikan tabel `menu_items` memiliki kolom minimal:
 
-Frontend memanggil API berikut:
+- `id`
+- `name`
+- `category`
+- `price`
+- `image_url`
+- `image_path`
+- `badge`
+- `description`
+- `has_variant`
+- `variants`
+- `sort_order`
+- `created_at`
+- `updated_at`
 
-- `POST /api/create-order`
-- `POST /api/create-qris`
-- `GET /api/orders/:orderId/status`
-- `POST /api/orders/:orderId/confirm`
-- `GET /api/check-payment?orderId=...`
-- `POST /api/update-order-status`
+## Supabase Storage bucket
 
-Jika project dijalankan di Vercel, `vercel.json` tetap mempertahankan rewrite supaya semua route frontend masuk ke `index.html`, sedangkan API tetap berjalan di folder `api`.
+Simpan gambar menu di bucket `menu-images`.
 
-## File yang dibersihkan
+- Folder otomatis mengikuti kategori menu, misalnya `makanan/`, `minuman/`, `lainnya/`, atau `paket/`
+- Saat menu dibuat, gambar diupload dulu lalu `image_url` dan `image_path` disimpan ke tabel `menu_items`
+- Saat menu diedit dan gambar diganti, file lama dihapus best-effort supaya tidak mengganggu penyimpanan utama
+- Saat menu dihapus, file lama juga dihapus best-effort agar data tetap rapi
 
-Beberapa file legacy yang tidak dipakai lagi sudah dihapus untuk merapikan project, termasuk file style duplikat dan komponen/page lama yang tidak terpakai di alur baru.
+## File yang sudah tidak dipakai
 
-## Fitur Admin (Kelola Menu)
+Beberapa file JSX legacy yang tidak terpakai sudah dihapus dari project agar tidak memicu error atau membebani build.
 
-Ditambahkan tanpa mengubah alur checkout/pembayaran yang sudah ada:
-
-- Ikon **⋮** di header membuka Profile Menu (bottom sheet): Login Account, Social Media, Contact Us.
-- `Login Account` → `/admin/login` (hanya password) → jika benar masuk ke `/admin/dashboard`.
-- Dashboard admin menampilkan seluruh menu; klik salah satu untuk edit, atau klik "➕ Tambah Menu" untuk menambah.
-- Form menu: upload gambar, nama, harga, kategori (Makanan/Minuman), deskripsi, badge, dan varian opsional (checkbox "Menggunakan Varian" + baris nama/harga varian yang bisa ditambah/dihapus).
-- Halaman utama mengambil data menu dari `GET /api/menu-list`. Jika backend/tabel belum siap, halaman otomatis memakai data bawaan di `src/data/menuItems.js` supaya tidak pernah error/kosong.
-
-### Endpoint baru (tidak mengubah endpoint order yang sudah ada)
-
-- `GET /api/menu-list` — publik, daftar menu.
-- `POST /api/menu-create` — admin only (header `x-admin-token`).
-- `PATCH /api/menu-update` — admin only.
-- `DELETE /api/menu-delete` — admin only.
-- `POST /api/admin-login` — cek password, mengembalikan token.
-
-### Environment variable tambahan
-
-- `ADMIN_PASSWORD` (backend) — password login admin. Default `admindimsum` jika tidak diset; **wajib diganti** sebelum deploy produksi.
-- `VITE_INSTAGRAM_URL`, `VITE_INSTAGRAM_HANDLE`
-- `VITE_TIKTOK_URL`, `VITE_TIKTOK_HANDLE`
-- `VITE_FACEBOOK_URL`, `VITE_FACEBOOK_HANDLE`
-- `VITE_CONTACT_EMAIL`
-- `VITE_OWNER_WHATSAPP` (sudah ada) dipakai juga untuk tombol WhatsApp di Contact Us.
-
-Ikon sosial media hanya muncul jika URL-nya diisi.
-
-### Migrasi database & storage
-
-Jalankan `supabase/migrations/20260726_add_menu_items.sql` di Supabase SQL editor. File ini:
-
-- Membuat tabel baru `menu_items` (tidak menyentuh tabel `orders`).
-- Mencoba membuat storage bucket publik `menu-images` untuk gambar menu. Jika baris `insert into storage.buckets ...` gagal (tergantung kebijakan project Anda), buat bucket publik bernama `menu-images` secara manual lewat tab Storage di dashboard Supabase.
-
-Jika tabel `menu_items` belum ada / kosong, halaman utama tetap tampil normal memakai data bawaan — fitur pemesanan, checkout, QRIS, dan Telegram tidak terpengaruh sama sekali.
