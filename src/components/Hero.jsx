@@ -4,7 +4,7 @@ export default function Hero() {
   return (
     <section className="menu-hero glass-card">
       <div className="menu-hero-logo">
-        <img src="/placeholder.png" alt="Logo AIME" loading="eager" />
+        <img src="/banner-image.png" alt="Logo AIME" loading="eager" />
       </div>
     </section>
   )
