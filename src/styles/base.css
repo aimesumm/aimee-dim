@@ -119,7 +119,7 @@ a { color: inherit; }
 .primary-btn, .ghost-btn, .tab, .choice, .add-btn, .qty-control button, .cart-chip, .chip-btn, .icon-btn, .chatbot-launcher, .variant-chip {
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255,255,255,.72);
+  background: rgba(255,240,196,.72);
   color: var(--text);
   transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
   box-shadow: none;
@@ -144,7 +144,7 @@ a { color: inherit; }
 
 .ghost-btn {
   padding: 13px 18px;
-  background: rgba(255,255,255,.78);
+  background: rgba(255,240,196,.78);
 }
 
 .ghost-btn.small {
@@ -190,7 +190,7 @@ a { color: inherit; }
 .summary,
 .payment-error-box,
 .payment-loader-box {
-  background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.82));
+  background: linear-gradient(180deg, rgba(255,240,196,.9), rgba(255,240,196,.82));
   border: 1px solid rgba(124, 31, 53, 0.14);
   box-shadow: var(--shadow);
   border-radius: var(--radius);
@@ -436,7 +436,7 @@ a { color: inherit; }
   width: 100%;
   padding: 16px 18px;
   border-radius: 24px;
-  background: rgba(255,255,255,.74);
+  background: rgba(255,240,196,.74);
   border: 1px solid rgba(124, 31, 53, 0.1);
 }
 
@@ -459,7 +459,7 @@ a { color: inherit; }
 .meta-box {
   padding: 14px;
   border-radius: 22px;
-  background: rgba(255,255,255,.7);
+  background: rgba(255,240,196,.7);
   border: 1px solid rgba(124, 31, 53, 0.1);
   text-align: center;
 }
@@ -539,9 +539,11 @@ a { color: inherit; }
 .variant-scroll,
 .tabs.scrollable {
   display: flex;
+  flex-wrap: nowrap;
   gap: 8px;
   overflow-x: auto;
   overflow-y: hidden;
+  width: 100%;
   max-width: 100%;
   padding-bottom: 6px;
   white-space: nowrap;
@@ -549,6 +551,16 @@ a { color: inherit; }
   scrollbar-color: rgba(143, 24, 61, 0.55) rgba(255, 255, 255, 0.18);
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+}
+
+.section-head .tabs.scrollable {
+  flex-basis: 100%;
+  justify-content: flex-start;
+}
+
+.tab {
+  scroll-snap-align: start;
 }
 
 .tabs.scrollable::-webkit-scrollbar,
@@ -659,7 +671,7 @@ a { color: inherit; }
   padding: 14px 16px;
   border-radius: 18px;
   border: 1px solid rgba(124, 31, 53, 0.18);
-  background: rgba(255,255,255,.86);
+  background: rgba(255,240,196,.86);
   color: var(--text);
   outline: none;
   transition: border-color .18s ease, box-shadow .18s ease;
@@ -684,7 +696,7 @@ a { color: inherit; }
   align-items: center;
   padding: 14px;
   border-radius: 22px;
-  background: rgba(255,255,255,.7);
+  background: rgba(255,240,196,.7);
   border: 1px solid rgba(124, 31, 53, 0.1);
 }
 
@@ -711,7 +723,7 @@ a { color: inherit; }
 .summary {
   display: grid;
   gap: 10px;
-  background: rgba(255,255,255,.74);
+  background: rgba(255,240,196,.74);
 }
 
 .summary > div,
@@ -841,7 +853,7 @@ a { color: inherit; }
 .qris-placeholder {
   min-height: 260px;
   border-radius: 22px;
-  background: rgba(255,255,255,.76);
+  background: rgba(255,240,196,.76);
   color: var(--muted);
 }
 
@@ -1040,7 +1052,7 @@ a { color: inherit; }
 
 .chat-bubble.user {
   justify-self: end;
-  background: rgba(255,255,255,.86);
+  background: rgba(255,240,196,.86);
   border: 1px solid rgba(124, 31, 53, 0.1);
 }
 
@@ -1337,27 +1349,30 @@ a { color: inherit; }
 }
 
 .order-scroll {
-  display: grid;
+  display: flex;
   gap: 12px;
-  max-height: 420px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   padding-right: 6px;
-  padding-bottom: 8px;
-  scroll-snap-type: y proximity;
+  padding-bottom: 10px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(143, 24, 61, 0.55) rgba(255, 255, 255, 0.18);
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
 }
 
 .order-item-card {
-  width: 100%;
-  min-width: 0;
-  max-width: none;
+  width: 240px;
+  min-width: 240px;
+  max-width: 240px;
   flex: 0 0 auto;
   scroll-snap-align: start;
   display: grid;
   gap: 10px;
   padding: 14px;
   border-radius: 22px;
-  background: rgba(255,255,255,.72);
+  background: rgba(255,240,196,.72);
   border: 1px solid rgba(124, 31, 53, 0.1);
 }
 
@@ -1415,7 +1430,7 @@ a { color: inherit; }
   gap: 12px;
   padding: 14px 16px;
   border-radius: 22px;
-  background: rgba(255,255,255,.72);
+  background: rgba(255,240,196,.72);
   border: 1px solid rgba(124, 31, 53, 0.12);
   cursor: pointer;
 }
@@ -2192,7 +2207,7 @@ a { color: inherit; }
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(255,255,255,.92);
+  background: rgba(255,240,196,.92);
   border: 1px solid rgba(124, 31, 53, 0.2);
   display: grid;
   place-items: center;
