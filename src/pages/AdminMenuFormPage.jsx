@@ -31,6 +31,7 @@ export default function AdminMenuFormPage() {
   const [description, setDescription] = useState('')
   const [imagePreview, setImagePreview] = useState(MENU_PLACEHOLDER_IMAGE)
   const [imageBase64, setImageBase64] = useState('')
+  const [isAvailable, setIsAvailable] = useState(true)
   const [useVariant, setUseVariant] = useState(false)
   const [variants, setVariants] = useState([emptyVariant()])
   const [error, setError] = useState('')
@@ -50,6 +51,7 @@ export default function AdminMenuFormPage() {
       setBadge(existingItem.badge || '')
       setDescription(existingItem.desc || '')
       setImagePreview(existingItem.image || MENU_PLACEHOLDER_IMAGE)
+      setIsAvailable(existingItem.available !== false)
       setUseVariant(Boolean(existingItem.hasVariantPage))
       setVariants(
         existingItem.variantOptions?.length
@@ -66,6 +68,7 @@ export default function AdminMenuFormPage() {
     setDescription('')
     setImagePreview(MENU_PLACEHOLDER_IMAGE)
     setImageBase64('')
+    setIsAvailable(true)
     setUseVariant(false)
     setVariants([emptyVariant()])
   }, [existingItem])
@@ -127,6 +130,7 @@ export default function AdminMenuFormPage() {
       category,
       badge: badge.trim(),
       description: description.trim(),
+      available: isAvailable,
       hasVariant: useVariant,
       variants: useVariant
         ? variants
@@ -225,6 +229,15 @@ export default function AdminMenuFormPage() {
                 ))}
             </div>
           </div>
+
+          <label className="admin-checkbox-row admin-stock-row">
+            <input
+              type="checkbox"
+              checked={isAvailable}
+              onChange={(event) => setIsAvailable(event.target.checked)}
+            />
+            <span>Stok Tersedia</span>
+          </label>
 
           <label className="admin-checkbox-row">
             <input type="checkbox" checked={useVariant} onChange={(event) => setUseVariant(event.target.checked)} />

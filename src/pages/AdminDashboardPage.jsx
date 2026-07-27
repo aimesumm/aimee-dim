@@ -96,6 +96,9 @@ export default function AdminDashboardPage() {
               <div className="menu-card-v2-body">
                 <h3>{item.name}</h3>
                 <strong className="menu-card-v2-price">{currency.format(item.price)}</strong>
+                <span className={`admin-menu-stock-tag${item.available === false ? ' is-empty' : ''}`}>
+                  {item.available === false ? 'Stok Kosong' : 'Stok Tersedia'}
+                </span>
                 {item.hasVariantPage ? <span className="admin-menu-variant-tag">Punya varian</span> : null}
               </div>
 

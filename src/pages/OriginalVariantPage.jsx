@@ -46,10 +46,13 @@ export default function OriginalVariantPage() {
   const variantPrice = selectedOption?.price || 0
   const unitPrice = item.price + variantPrice
   const total = unitPrice * quantity
+  const isAvailable = item.available !== false
 
   const handleClose = () => navigate(-1)
 
   const handleAddOrder = () => {
+    if (!isAvailable) return
+
     addItem(
       {
         id: item.id,
@@ -62,6 +65,7 @@ export default function OriginalVariantPage() {
         category: item.category,
         emoji: item.emoji,
         image: item.image,
+        available: item.available,
       },
       quantity,
     )
@@ -92,6 +96,7 @@ export default function OriginalVariantPage() {
         <h1 className="variant-name">{item.name.toUpperCase()}</h1>
         <strong className="variant-base-price">{currency.format(item.price)}</strong>
         <p className="variant-desc">{item.desc}</p>
+        {!isAvailable ? <p className="variant-stock-note">Stok kosong — menu ini tidak bisa ditambahkan ke keranjang.</p> : null}
 
         {item.variantOptions?.length ? (
           <VariantSelector
@@ -115,10 +120,10 @@ export default function OriginalVariantPage() {
       </motion.main>
 
       <div className="variant-footer">
-        <button className="variant-add-order-btn" type="button" onClick={handleAddOrder}>
-          <span>Add Orders</span>
-          <span>•</span>
-          <span>{currency.format(total)}</span>
+        <button className="variant-add-order-btn" type="button" onClick={handleAddOrder} disabled={!isAvailable}>
+          <span>{isAvailable ? 'Add Orders' : 'Stok Kosong'}</span>
+          {isAvailable ? <span>•</span> : null}
+          <span>{isAvailable ? currency.format(total) : ''}</span>
         </button>
       </div>
     </div>

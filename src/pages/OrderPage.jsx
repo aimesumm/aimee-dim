@@ -45,6 +45,7 @@ export default function OrderPage() {
   const selectedMethod = String(location.state?.method || preferredMethod || 'QRIS').toUpperCase()
 
   const handleRelatedAdd = (item) => {
+    if (item.available === false) return
     if (item.hasVariantPage) {
       navigate(`/variant/${item.id}`)
       return
@@ -59,6 +60,7 @@ export default function OrderPage() {
       category: item.category,
       emoji: item.emoji,
       image: item.image,
+      available: item.available,
       variant: '',
       variantLabel: '',
     })
@@ -210,15 +212,16 @@ export default function OrderPage() {
                     <button
                       key={item.id}
                       type="button"
-                      className="related-menu-card"
+                      className={`related-menu-card${item.available === false ? ' is-unavailable' : ''}`}
                       onClick={() => handleRelatedAdd(item)}
+                      disabled={item.available === false}
                     >
                       <span className="related-menu-thumb">
                         <img src={item.image || MENU_PLACEHOLDER_IMAGE} alt={item.name} />
                       </span>
                       <span className="related-menu-copy">
                         <strong>{item.name}</strong>
-                        <small>{currency.format(item.price)}</small>
+                        <small>{item.available === false ? 'Stok Kosong' : currency.format(item.price)}</small>
                       </span>
                       <span className="related-menu-add" aria-hidden="true">
                         <RelatedIcon />
