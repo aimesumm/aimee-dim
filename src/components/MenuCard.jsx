@@ -11,20 +11,22 @@ export default function MenuCard({
   onIncrease,
   onDecrease,
 }) {
-  const hasStepper = !item.hasVariantPage && Number(cartQty) > 0
+  const isAvailable = item.available !== false
+  const hasStepper = isAvailable && !item.hasVariantPage && Number(cartQty) > 0
 
   return (
     <motion.article
-      className="menu-card-v2 glass-card"
+      className={`menu-card-v2 glass-card${isAvailable ? '' : ' is-unavailable'}`}
       initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-60px' }}
       transition={{ duration: 0.38, delay: index * 0.045, ease: [0.16, 1, 0.3, 1] }}
-      whileHover={{ y: -3 }}
+      whileHover={isAvailable ? { y: -3 } : undefined}
     >
       <div className="menu-card-v2-image">
         <img src={item.image || MENU_PLACEHOLDER_IMAGE} alt={item.name} loading="lazy" />
         {item.badge ? <span className="menu-badge">{item.badge}</span> : null}
+        {!isAvailable ? <span className="menu-card-v2-stock-badge">Stok Kosong</span> : null}
       </div>
 
       <div className="menu-card-v2-body">
@@ -33,7 +35,17 @@ export default function MenuCard({
       </div>
 
       <div className="menu-card-v2-footer">
-        {item.hasVariantPage ? (
+        {!isAvailable ? (
+          <button
+            className="menu-card-v2-add menu-card-v2-add-disabled"
+            type="button"
+            disabled
+            aria-disabled="true"
+            aria-label={`${item.name} stok kosong`}
+          >
+            Stok Kosong
+          </button>
+        ) : item.hasVariantPage ? (
           <button
             className="menu-card-v2-add"
             type="button"

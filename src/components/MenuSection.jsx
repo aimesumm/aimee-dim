@@ -118,6 +118,7 @@ export default function MenuSection({ cartBarRef }) {
   }
 
   const handleAdd = (item, sourceEl) => {
+    if (item.available === false) return
     if (item.hasVariantPage) {
       navigate(`/variant/${item.id}`)
       return
@@ -132,6 +133,7 @@ export default function MenuSection({ cartBarRef }) {
       category: item.category,
       emoji: item.emoji,
       image: item.image,
+      available: item.available,
       variant: '',
       variantLabel: '',
     })
@@ -140,6 +142,7 @@ export default function MenuSection({ cartBarRef }) {
   }
 
   const handleIncrease = (item, sourceEl) => {
+    if (item.available === false) return
     if (item.hasVariantPage) return
 
     addItem({
@@ -151,6 +154,7 @@ export default function MenuSection({ cartBarRef }) {
       category: item.category,
       emoji: item.emoji,
       image: item.image,
+      available: item.available,
       variant: '',
       variantLabel: '',
     })
