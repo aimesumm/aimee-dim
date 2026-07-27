@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { currency, getMethodLabel, getStatusLabel } from '../data/siteConfig'
+import { currency } from '../data/siteConfig'
 import OrderSummary from './OrderSummary'
 
 function QrisPreview({ qris, orderId, total, countdown, generating, error, onRetry }) {
@@ -73,8 +73,6 @@ export default function PaymentConfirmationCard({
   onRetryQris,
   children,
 }) {
-  const paymentStatus = String(order?.paymentStatus || order?.status || 'pending').toLowerCase()
-
   return (
     <motion.section
       className="payment-confirmation-card glass-card"
@@ -82,24 +80,6 @@ export default function PaymentConfirmationCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
     >
-      <div className="payment-confirmation-head">
-        <div>
-          <p className="eyebrow">Complete Payment</p>
-          <h1>Konfirmasi pesanan</h1>
-          <p className="section-copy">
-            Order ID {order?.orderId || '-'} • {getMethodLabel(order?.paymentMethod || order?.method || (isQris ? 'QRIS' : 'CASH'))} • {getStatusLabel(paymentStatus)}
-          </p>
-        </div>
-        <div className="status-total">{currency.format(Number(order?.total || 0))}</div>
-      </div>
-
-      <div className="confirm-customer-box">
-        <div className="summary-row"><span>Customer information</span><strong>{order?.customerName || order?.name || '-'}</strong></div>
-        <div className="summary-row"><span>Nomor WhatsApp</span><strong>{order?.customerPhone || order?.customer_phone || order?.phone || order?.whatsapp || '-'}</strong></div>
-        <div className="summary-row"><span>Email</span><strong>{order?.customerEmail || order?.customer_email || order?.email || '-'}</strong></div>
-        <div className="summary-row"><span>Catatan</span><strong>{order?.note || order?.customerNote || '-'}</strong></div>
-      </div>
-
       <OrderSummary order={order} />
 
       {isQris ? (
