@@ -326,8 +326,8 @@ export default function PaymentPage() {
         <main className="container payment-gateway-page payment-draft-page">
           <CustomerDetailsCard
             hideNote
-            title="Isi data customer"
-            copy="Nama, nomor WhatsApp, dan email akan dikirim ke backend sebelum admin mengonfirmasi pesanan."
+            title="Isi data diri anda"
+            copy="Nama, nomor WhatsApp, dan email. Supaya admin bisa mengkonfirmasi pesanan kamu."
           />
 
           <PaymentMethodPicker
