@@ -327,7 +327,7 @@ export default function PaymentPage() {
           <CustomerDetailsCard
             hideNote
             title="Isi data diri anda"
-            copy="Nama, nomor WhatsApp, dan email. Supaya admin bisa mengkonfirmasi pesanan kamu."
+            copy="Nama, nomor WhatsApp, dan email. agar admin bisa mengkonfirmasi pesanan kamu."
           />
 
           <PaymentMethodPicker
