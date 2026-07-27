@@ -53,7 +53,6 @@ function CashPreview({ orderId, total }) {
     <div className="cash-confirm-box">
       <div className="cash-confirm-badge">💵</div>
       <h3>Menunggu konfirmasi pesanan</h3>
-      <p>Silakan tunggu admin mengonfirmasi pesanan Anda melalui Telegram.</p>
       <div className="summary-row"><span>UID</span><strong>{orderId || '-'}</strong></div>
       <div className="summary-row"><span>Total bayar</span><strong>{currency.format(Number(total || 0))}</strong></div>
     </div>
