@@ -52,7 +52,7 @@ export default function PaymentSuccess({ order, variant = 'qris' }) {
         <MapPreview />
         <div className="success-note">
           <strong>Langkah berikutnya</strong>
-          <p>Tekan tombol di bawah untuk mengirim pesanan ke WhatsApp setelah status pembayaran aktif.</p>
+          <p>Tekan tombol dibawah ini untuk mengirim pesanan yang sudah kamu order.</p>
         </div>
       </div>
 
