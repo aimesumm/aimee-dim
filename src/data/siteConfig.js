@@ -12,7 +12,7 @@ export const dimsumVariants = [
 
 export const pickupPoint = {
   name: 'LAPAK - AIME',
-  detail: 'Jika pesanan anda telah selesai, silahkan pesanan anda sesuai titik maps ini.',
+  detail: 'Jika pesanan anda telah selesai, silahkan (pickup) pesanan anda sesuai titik maps ini.',
   note: 'Segera kirim orderan anda denga mengklik tombol dibawah ini, agar cepat untuk di pickup.',
   map: 'https://maps.app.goo.gl/zAxbsxVBaEr7S3iG7',
 }
