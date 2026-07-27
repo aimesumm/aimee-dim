@@ -89,8 +89,8 @@ export default function OrderPage() {
         >
           <div>
             <p className="eyebrow">Order</p>
-            <h1>Pesanan yang sudah dipilih</h1>
-            <p className="hero-text">Edit jumlah item dibawah ini, atau masih m tmbah?? Klik Jo Add order</p>
+            <h1>Pesanan anda yang sudah dipilih</h1>
+            <p className="hero-text">Edit jumlah item dibawah ini, atau masih kurang?? Klik +Add order for btambah menu</p>
           </div>
         </motion.section>
 
@@ -165,11 +165,11 @@ export default function OrderPage() {
               </div>
 
               <label className="field field-full">
-                <span>Catatan untuk admin</span>
+                <span>Catatan untuk pesanan anda</span>
                 <textarea
                   value={customer.note}
                   onChange={(event) => setCustomer((prev) => ({ ...prev, note: event.target.value }))}
-                  placeholder="Tambahkan catatan untuk pesanan ini"
+                  placeholder="Isi catatan pesanan anda (Opsional)"
                   rows={3}
                 />
               </label>
