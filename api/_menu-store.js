@@ -105,15 +105,20 @@ function buildRow(item = {}, existing = null) {
   const existingVariants = normalizeVariants(existing?.variants)
   const nextVariants = item.variants !== undefined ? normalizeVariants(item.variants) : existingVariants
   const hasVariant = item.hasVariant !== undefined ? Boolean(item.hasVariant) : Boolean(existing?.has_variant ?? existing?.hasVariant)
-  const available = item.available === false
-    ? false
-    : item.inStock === false
-      ? false
-      : existing?.available === false
-        ? false
-        : existing?.in_stock === false
-          ? false
-          : true
+
+  const existingAvailable =
+    existing?.available !== undefined
+      ? existing.available !== false
+      : existing?.in_stock !== undefined
+        ? existing.in_stock !== false
+        : true
+
+  const available =
+    item.available !== undefined
+      ? Boolean(item.available)
+      : item.inStock !== undefined
+        ? Boolean(item.inStock)
+        : existingAvailable
 
   return {
     name: String(item.name ?? existing?.name ?? '').trim(),
