@@ -11,10 +11,10 @@ export const dimsumVariants = [
 ]
 
 export const pickupPoint = {
-  name: 'AIME-Dimsum',
-  detail: 'Pesanan akan diproses setelah owner mengonfirmasi pembayaran.',
-  note: 'Tombol WhatsApp baru muncul setelah status berubah menjadi berhasil.',
-  map: 'https://maps.google.com/?q=AIME+Dimsum',
+  name: 'LAPAK - AIME',
+  detail: 'Jika pesanan anda telah selesai, silahkan pesanan anda sesuai titik maps ini.',
+  note: 'Segera kirim orderan anda denga mengklik tombol dibawah ini, agar cepat untuk di pickup.',
+  map: 'https://maps.app.goo.gl/zAxbsxVBaEr7S3iG7',
 }
 
 export const currency = new Intl.NumberFormat('id-ID', {
@@ -78,7 +78,7 @@ export function getContactWhatsAppUrl() {
 }
 
 const STATUS_LABELS = {
-  [PAYMENT_STATUS.PENDING]: 'Menunggu Konfirmasi Owner',
+  [PAYMENT_STATUS.PENDING]: 'Menunggu Konfirmasi Pesanan',
   [PAYMENT_STATUS.PAID]: 'Pembayaran Berhasil',
   [PAYMENT_STATUS.PROCESSING]: 'Pesanan Diproses',
   [PAYMENT_STATUS.COMPLETED]: 'Pesanan Selesai',
@@ -156,7 +156,7 @@ export function getCustomerOrderMessage(order = {}) {
 }
 
 export function getFollowupMessage(order = {}) {
-  return `Halo admin, pembayaran untuk order ${order.orderId || '-'} masih belum dikonfirmasi. Mohon bantu cek dan konfirmasi ya.`
+  return `Halo kakak, pembayaran untuk order ${order.orderId || '-'} masih belum dikonfirmasi. Mohon bantu cek dan konfirmasi ya.`
 }
 
 export function getWhatsAppOrderUrl(order = {}) {
