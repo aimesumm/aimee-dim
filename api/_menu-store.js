@@ -92,6 +92,7 @@ function mapRow(row) {
     imagePath: row.image_path || null,
     badge: row.badge || '',
     description: row.description || '',
+    available: row.available === false ? false : row.in_stock === false ? false : true,
     hasVariant: Boolean(row.has_variant),
     variants: normalizeVariants(row.variants),
     sortOrder: toNumber(row.sort_order, 0),
@@ -104,6 +105,15 @@ function buildRow(item = {}, existing = null) {
   const existingVariants = normalizeVariants(existing?.variants)
   const nextVariants = item.variants !== undefined ? normalizeVariants(item.variants) : existingVariants
   const hasVariant = item.hasVariant !== undefined ? Boolean(item.hasVariant) : Boolean(existing?.has_variant ?? existing?.hasVariant)
+  const available = item.available === false
+    ? false
+    : item.inStock === false
+      ? false
+      : existing?.available === false
+        ? false
+        : existing?.in_stock === false
+          ? false
+          : true
 
   return {
     name: String(item.name ?? existing?.name ?? '').trim(),
@@ -113,6 +123,7 @@ function buildRow(item = {}, existing = null) {
     image_path: item.imagePath !== undefined ? (item.imagePath || null) : (existing?.image_path ?? existing?.imagePath ?? null),
     badge: item.badge !== undefined ? (item.badge || null) : (existing?.badge || null),
     description: item.description !== undefined ? (item.description || null) : (existing?.description || null),
+    available,
     has_variant: hasVariant,
     variants: nextVariants,
     sort_order: item.sortOrder !== undefined ? toNumber(item.sortOrder, toNumber(existing?.sort_order, 0)) : toNumber(existing?.sort_order, 0),
@@ -196,6 +207,7 @@ export async function createMenuItem(item = {}) {
       image_path: row.image_path,
       badge: row.badge,
       description: row.description,
+      available: row.available,
       has_variant: row.has_variant,
       variants: row.variants,
       sort_order: row.sort_order,

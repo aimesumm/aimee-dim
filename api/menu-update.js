@@ -31,6 +31,7 @@ export default async function handler(req, res) {
       price: body.price,
       badge: body.badge,
       description: body.description,
+      available: body.available,
       hasVariant: body.hasVariant,
       variants: body.variants,
       sortOrder: body.sortOrder,

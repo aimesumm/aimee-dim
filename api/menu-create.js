@@ -37,6 +37,7 @@ export default async function handler(req, res) {
       imagePath,
       badge: body.badge,
       description: body.description,
+      available: body.available,
       hasVariant: body.hasVariant,
       variants: body.variants,
       sortOrder: body.sortOrder,
