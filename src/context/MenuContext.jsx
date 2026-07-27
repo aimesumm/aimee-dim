@@ -15,6 +15,7 @@ function normalizeBackendItem(row) {
     badge: row.badge || '',
     image: row.imageUrl || MENU_PLACEHOLDER_IMAGE,
     emoji: row.imageUrl ? '' : '🍽️',
+    available: row.available !== false && row.inStock !== false,
     hasVariantPage: Boolean(row.hasVariant) && Array.isArray(row.variants) && row.variants.length > 0,
     variantOptions: Array.isArray(row.variants)
       ? row.variants.map((variant, index) => ({

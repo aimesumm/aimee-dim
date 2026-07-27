@@ -32,8 +32,12 @@ export function CartProvider({ children }) {
   const api = useMemo(() => {
     const addItem = (item, quantity = 1) => {
       const qtyToAdd = Math.max(1, Number(quantity) || 1)
+      const isAvailable = item?.available !== false && item?.inStock !== false
+      if (!isAvailable) return
+
       const nextItem = {
         ...item,
+        available: true,
         variant: item.variant || '',
         variantLabel: item.variantLabel || item.variant || '',
       }
