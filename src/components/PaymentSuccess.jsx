@@ -7,7 +7,13 @@ import GiveOrderButton from './GiveOrderButton'
 
 function MapPreview() {
   return (
-    <a className="map-preview" href={pickupPoint.map} target="_blank" rel="noreferrer">
+    <a
+      className="map-preview"
+      href={pickupPoint.map}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={`Buka maps lokasi ${pickupPoint.name}`}
+    >
       <div className="map-preview-top">
         <span className="map-pin">📍</span>
         <div>
@@ -15,12 +21,17 @@ function MapPreview() {
           <p>{pickupPoint.detail}</p>
         </div>
       </div>
-      <div className="map-mini-grid" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-        <span />
+
+      <div className="map-preview-image-wrap">
+        <img
+          className="map-preview-image"
+          src="/maps-image.png"
+          alt={`Titik maps ${pickupPoint.name}`}
+          loading="lazy"
+        />
+        <span className="map-preview-badge">Klik untuk buka maps</span>
       </div>
+
       <div className="map-preview-footer">{pickupPoint.note}</div>
     </a>
   )
