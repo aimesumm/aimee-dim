@@ -24,7 +24,7 @@ function CashIcon() {
 
 const METHODS = [
   { value: 'QRIS', title: 'QRIS', icon: QrisIcon },
-  { value: 'CASH', title: 'Tunai', icon: CashIcon },
+  { value: 'CASH', title: 'TUNAI', icon: CashIcon },
 ]
 
 export default function PaymentMethodPicker({ value, onChange, onContinue, loading }) {
@@ -39,7 +39,6 @@ export default function PaymentMethodPicker({ value, onChange, onContinue, loadi
         <div>
           <p className="eyebrow">Complete Payment</p>
           <h2>Pilih metode pembayaran</h2>
-          <p className="section-copy">Setelah lanjut, halaman akan berubah ke konfirmasi pesanan.</p>
         </div>
       </div>
 
