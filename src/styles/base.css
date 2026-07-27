@@ -1038,13 +1038,6 @@ a { color: inherit; }
   gap: 14px;
 }
 
-.map-preview {
-  display: grid;
-  gap: 12px;
-  padding: 18px;
-  text-decoration: none;
-}
-
 .map-preview-top {
   display: flex;
   gap: 12px;
@@ -1057,6 +1050,43 @@ a { color: inherit; }
 
 .map-preview-top strong {
   display: block;
+}
+
+.map-preview {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.map-preview-image-wrap {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(123, 24, 36, 0.12);
+  box-shadow: var(--shadow-soft);
+  background: #fff;
+}
+
+.map-preview-image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+.map-preview-badge {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(123, 24, 36, 0.9);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  backdrop-filter: blur(10px);
 }
 
 .map-preview-top p,
