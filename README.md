@@ -1,54 +1,48 @@
 # AIME-Dimsum
 
-Project ini dirapikan supaya alur menu, admin, dan pembayaran tetap stabil di mobile, dengan tema maroon yang lebih tegas.
+Project ini sekarang memakai **Midtrans QRIS** untuk pembayaran, tanpa mengubah gaya tampilan utama. Alur konfirmasi manual sudah diganti dengan webhook Midtrans, lalu order sukses dikirim otomatis ke WhatsApp admin lewat integrasi Baileys bridge.
 
 ## Alur utama
 
-Home → Menu → Keranjang → Data pelanggan → Checkout → QRIS / Tunai → Status pembayaran → Konfirmasi owner → WhatsApp setelah berhasil
+Home → Menu → Keranjang → Data pelanggan → Checkout → QRIS Midtrans → Status pembayaran → WhatsApp admin
 
-## Fitur utama yang tersedia
+## Yang berubah
 
-- Menu utama punya filter kategori: Semua, Makanan, Minuman, Lainnya, dan Paket
-- Admin dashboard bisa tambah, edit, dan hapus menu
-- Form admin mendukung kategori menu baru saat membuat atau mengubah item
-- Tema warna diganti dari sakura menjadi merah maroon
-- Alur QRIS dibuat lebih stabil supaya gambar tidak cepat hilang saat data order di-refresh
-- File JSX yang tidak dipakai sudah dibersihkan agar project lebih ringan
+- Generator QRIS lama diganti ke **Midtrans Snap QRIS**
+- Tombol/flow konfirmasi manual dihapus
+- Saat pembayaran sukses, order otomatis diproses ke **WhatsApp admin**
+- Tampilan UI tetap dipertahankan, yang berubah hanya cara kerja pembayaran
 
-## Backend yang tetap dipakai
+## Catatan penting
 
-Folder backend tetap menggunakan API dan Supabase yang sudah ada:
+Midtrans Snap memang dibuat untuk membuka halaman pembayaran sebagai pop-up atau redirect, dan pembayaran bisa dibatasi ke metode tertentu lewat `enabled_payments`. Untuk QRIS, Midtrans juga menyediakan webhook/notifikasi server saat transaksi berubah status. citeturn995302search3turn301479search0turn995302search1turn995302search2
 
-- `api/_shared.js`
-- `api/_store.js`
+## Backend yang dipakai
+
+Folder backend sekarang memakai endpoint berikut:
+
 - `api/create-order.js`
-- `api/create-qris.js`
-- `api/check-payment.js`
+- `api/create-qris.js` → membuat Snap token Midtrans QRIS
+- `api/midtrans-webhook.js` → menerima notifikasi pembayaran dari Midtrans
 - `api/orders/[orderId]/status.js`
-- `api/orders/[orderId]/confirm.js`
 - `api/update-order-status.js`
-- `api/telegram-webhook.js`
+- `api/menu-list.js`
+- `api/menu-create.js`
+- `api/menu-update.js`
+- `api/menu-delete.js`
 
-Tidak ada perubahan struktur backend inti. Yang diperbarui terutama adalah frontend, normalisasi kategori menu, dan penyimpanan QRIS agar tidak mudah tertimpa refresh data.
-
-## Struktur frontend
-
-- `src/pages/MenuPage.jsx` — halaman utama
-- `src/pages/OrderPage.jsx` — checkout
-- `src/pages/PaymentPage.jsx` — halaman QRIS / tunai dan status
-- `src/pages/PaymentSuccess.jsx` — halaman berhasil
-- `src/components/*` — komponen UI yang dipakai bersama
-- `src/styles/base.css` — seluruh styling utama
+Endpoint konfirmasi manual seperti Telegram sudah dinonaktifkan.
 
 ## Environment variables
 
-Buat file `.env` di root project lalu isi variabel berikut sesuai kebutuhan.
+Buat file `.env` di root project.
 
 ### Frontend
 ```env
+VITE_MIDTRANS_CLIENT_KEY=your_midtrans_client_key
+VITE_MIDTRANS_IS_PRODUCTION=false
 VITE_OWNER_WHATSAPP=628xxxxxxxxxx
 VITE_CONTACT_EMAIL=admin@domain.com
-VITE_TELEGRAM_BOT_USERNAME=namabot
 VITE_INSTAGRAM_HANDLE=@aime_dimsum
 VITE_INSTAGRAM_URL=https://instagram.com/aime_dimsum
 VITE_TIKTOK_HANDLE=@aime_dimsum
@@ -64,79 +58,41 @@ VITE_SUPABASE_ANON_KEY=your_public_anon_key
 SUPABASE_URL=https://xxxxx.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ADMIN_PASSWORD=your_admin_password
-QRIS_DATA=your_qris_static_payload
-TELEGRAM_BOT_TOKEN=123456:ABCDEF
-TELEGRAM_CHAT_ID=123456789
+MIDTRANS_SERVER_KEY=your_midtrans_server_key
+MIDTRANS_IS_PRODUCTION=false
 APP_BASE_URL=https://your-domain.com
 SITE_URL=https://your-domain.com
+WHATSAPP_BAILEYS_API_URL=https://your-baileys-bridge.example/api/send-message
+WHATSAPP_BAILEYS_API_KEY=optional-secret
+WHATSAPP_ADMIN_NUMBER=628xxxxxxxxxx
 ```
 
-Catatan:
-- `APP_BASE_URL` atau `SITE_URL` dipakai untuk webhook Telegram.
-- `QRIS_DATA` wajib diisi agar generator QRIS bisa membuat kode pembayaran.
-- `SUPABASE_SERVICE_ROLE_KEY` hanya untuk backend. Jangan taruh key ini di frontend.
+## Cara kerja payment baru
 
-## Cara menyiapkan environment
+1. User checkout seperti biasa.
+2. Backend membuat order dengan status `pending`.
+3. Frontend meminta Snap token Midtrans dari `api/create-qris`.
+4. Token Snap dibuka di halaman payment.
+5. Midtrans mengirim webhook ke `api/midtrans-webhook` saat status transaksi berubah.
+6. Kalau status `settlement` atau `capture`, order diupdate menjadi `paid`.
+7. Setelah itu, project memanggil bridge WhatsApp berbasis Baileys untuk mengirim detail order ke admin. Midtrans memang menyarankan penggunaan notification/webhook backend untuk memproses order setelah pembayaran selesai, dan status transaksi bisa diverifikasi lewat status API. citeturn995302search13turn995302search12turn995302search9
 
-1. Buat file `.env` di root project.
-2. Isi variabel frontend dan backend sesuai blok di atas.
-3. Pastikan Supabase URL dan key sudah benar.
-4. Pastikan `ADMIN_PASSWORD` sama dengan password yang ingin dipakai login admin.
-5. Jalankan project dengan `npm install` lalu `npm run dev`.
-6. Jika deploy ke Vercel atau server lain, masukkan env yang sama ke dashboard hosting.
+## Catatan untuk Baileys
 
-### Catatan tentang folder `api/` saat development lokal
+Baileys perlu berjalan di service yang hidup terus, jadi paling aman dijalankan di VPS atau server lain, lalu project ini hanya memanggil endpoint bridge tersebut. File backend sudah disiapkan supaya bisa mengirim payload order ke endpoint itu.
 
-`vite.config.js` sudah dilengkapi shim kecil (`vercel-api-dev-shim`) yang menjalankan file-file di `api/` langsung di dalam proses `vite dev`, jadi `npm run dev` saja sudah cukup untuk menjalankan flow checkout → order → QRIS/Telegram → status secara end-to-end di localhost, tanpa perlu Vercel CLI. Route dinamis seperti `api/orders/[orderId]/status.js` juga sudah didukung.
+## Jalankan project
 
-Kalau ingin environment yang paling mendekati produksi Vercel (termasuk cron/webhook config di `vercel.json`), tetap boleh pakai `vercel dev` sebagai alternatif — cukup jalankan `npx vercel dev` sebagai pengganti `npm run dev`.
+```bash
+npm install
+npm run dev
+```
 
-## Supabase table
+## Deploy
 
-Pastikan tabel `orders` memiliki kolom minimal:
-
-- `order_id`
-- `customer_name`
-- `customer_phone`
-- `note`
-- `items`
-- `item_count`
-- `subtotal`
-- `total`
-- `payment_method`
-- `payment_status`
-- `telegram_message_id`
-- `confirmed_at`
-- `qris`
-- `created_at`
-- `updated_at`
-
-Untuk menu, pastikan tabel `menu_items` memiliki kolom minimal:
-
-- `id`
-- `name`
-- `category`
-- `price`
-- `image_url`
-- `image_path`
-- `badge`
-- `description`
-- `has_variant`
-- `variants`
-- `sort_order`
-- `created_at`
-- `updated_at`
-
-## Supabase Storage bucket
-
-Simpan gambar menu di bucket `menu-images`.
-
-- Folder otomatis mengikuti kategori menu, misalnya `makanan/`, `minuman/`, `lainnya/`, atau `paket/`
-- Saat menu dibuat, gambar diupload dulu lalu `image_url` dan `image_path` disimpan ke tabel `menu_items`
-- Saat menu diedit dan gambar diganti, file lama dihapus best-effort supaya tidak mengganggu penyimpanan utama
-- Saat menu dihapus, file lama juga dihapus best-effort agar data tetap rapi
-
-## File yang sudah tidak dipakai
-
-Beberapa file JSX legacy yang tidak terpakai sudah dihapus dari project agar tidak memicu error atau membebani build.
-
+1. Isi semua env di Vercel / hosting.
+2. Pastikan `MIDTRANS_SERVER_KEY` dan `VITE_MIDTRANS_CLIENT_KEY` benar.
+3. Set URL webhook Midtrans ke:
+   `https://domain-kamu/api/midtrans-webhook`
+4. Pastikan endpoint bridge WhatsApp/Baileys aktif.
+5. Deploy ulang project.
