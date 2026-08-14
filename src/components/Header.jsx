@@ -26,7 +26,7 @@ export default function Header() {
   return (
     <header className="topbar menu-topbar glass-card">
       <div className="header-title-wrap">
-        <h1 className="header-title">LAPAK - AIME</h1>
+        <h1 className="header-title">AIME YUMMY</h1>
       </div>
 
       <div className="topbar-actions header-actions">
