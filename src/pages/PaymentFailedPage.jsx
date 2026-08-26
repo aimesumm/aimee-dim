@@ -2,8 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { currency, formatOrderTime, getAdminContactUrl, getMethodLabel, getStatusLabel, pickupPoint } from '../data/siteConfig'
-import { checkPayment } from '../services/paymentGateway'
+import { currency, formatOrderTime, getMethodLabel, getStatusLabel, pickupPoint } from '../data/siteConfig'
 import { normalizeOrder, readLastOrder, writeLastOrder } from '../lib/orderHelpers'
 
 function MapPreview() {
@@ -42,26 +41,7 @@ export default function PaymentFailedPage() {
     }
   }, [order, orderId, navigate])
 
-  useEffect(() => {
-    if (!order?.orderId) return
-    const timer = setInterval(async () => {
-      try {
-        const latest = await checkPayment(order.orderId)
-        if (latest?.orderId) {
-          const normalized = normalizeOrder(latest, order)
-          setOrder(normalized)
-          writeLastOrder(normalized)
-        }
-      } catch {
-        // ignore
-      }
-    }, 12000)
-    return () => clearInterval(timer)
-  }, [order])
-
   if (!order?.orderId) return null
-
-  const contact = getAdminContactUrl(order)
 
   return (
     <div className="app-shell">
@@ -74,7 +54,7 @@ export default function PaymentFailedPage() {
         >
           <div className="success-hero">
             <p className="eyebrow">Pembayaran gagal</p>
-            <h2>Silakan kirim pesan ke admin</h2>
+            <h2>QRIS sudah kedaluwarsa</h2>
             <p className="qris-note">
               Order ID {orderId || order.orderId} • {getMethodLabel(order.method)} • {formatOrderTime(order.time)}
             </p>
@@ -82,19 +62,14 @@ export default function PaymentFailedPage() {
           </div>
 
           <div className="notice error">
-            Pembayaran belum dikonfirmasi setelah beberapa kali cek status. Silakan kirim pesan ke admin untuk membantu konfirmasi manual.
+            QRIS sudah melewati batas waktu pembayaran. Tidak ada konfirmasi manual yang diperlukan. Silakan buat pesanan baru untuk mendapatkan QRIS aktif.
           </div>
 
           <MapPreview />
 
           <div className="failure-actions">
-            <a className="primary-btn" href={contact.href} target="_blank" rel="noreferrer" onClick={(e) => {
-              if (contact.href === '#') e.preventDefault()
-            }}>
-              Kirim Pesan ke {contact.label}
-            </a>
-            <button className="ghost-btn" type="button" onClick={() => navigate(`/payment/${String(order.method || 'qris').toLowerCase()}/${order.orderId}`, { replace: true, state: { order } })}>
-              Cek Lagi
+            <button className="primary-btn" type="button" onClick={() => navigate('/order', { replace: true })}>
+              Buat Pesanan Baru
             </button>
           </div>
 
