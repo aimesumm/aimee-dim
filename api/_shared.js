@@ -11,10 +11,11 @@ const PAYMENT_METHOD = {
 }
 
 const STATUS_LABELS = {
-  [PAYMENT_STATUS.PENDING]: 'Menunggu Konfirmasi Owner',
+  [PAYMENT_STATUS.PENDING]: 'Menunggu Pembayaran',
   [PAYMENT_STATUS.PAID]: 'Pembayaran Berhasil',
   [PAYMENT_STATUS.PROCESSING]: 'Pesanan Diproses',
   [PAYMENT_STATUS.COMPLETED]: 'Pesanan Selesai',
+  expired: 'QRIS Kedaluwarsa',
 }
 
 const METHOD_LABELS = {
@@ -89,7 +90,7 @@ export function normalizePaymentMethod(value) {
 
 export function normalizePaymentStatus(value) {
   const normalized = String(value || 'pending').toLowerCase()
-  if (normalized === 'paid' || normalized === 'processing' || normalized === 'completed') return normalized
+  if (normalized === 'paid' || normalized === 'processing' || normalized === 'completed' || normalized === 'expired') return normalized
   return 'pending'
 }
 
@@ -151,77 +152,6 @@ ${getStatusLabel(order.paymentStatus || order.status)}
 ${formatOrderTime(order.createdAt || order.time)}`
 }
 
-export function buildTelegramPendingMessage(order = {}) {
-  return `🍱 PESANAN BARU AIME-Dimsum
-
-🆔 Order ID:
-${order.orderId || '-'}
-
-${buildCustomerBlock(order)}
-
-💰 Nominal:
-Rp ${Number(order.total || 0).toLocaleString('id-ID')}
-
-💳 Metode:
-${getMethodLabel(order.paymentMethod || order.method)}
-
-Status :
-🟡 MENUNGGU KONFIRMASI
-
-Tekan tombol di bawah jika pembayaran sudah diterima.`
-}
-
-export function buildTelegramConfirmedMessage(order = {}) {
-  return `✅ Pembayaran berhasil dikonfirmasi
-
-━━━━━━━━━━━━━━━━━━
-
-Order ID :
-${order.orderId || '-'}
-
-${buildCustomerBlock(order)}
-
-Status :
-🟢 PAID
-
-Nominal :
-Rp ${Number(order.total || 0).toLocaleString('id-ID')}
-
-Metode :
-${getMethodLabel(order.paymentMethod || order.method)}
-
-Waktu Konfirmasi :
-${formatOrderTime(order.confirmedAt)}
-
-Website pelanggan telah diperbarui.
-
-Silakan tunggu pelanggan menekan tombol
-"Kirim Pesanan Saya".
-
-━━━━━━━━━━━━━━━━━━`
-}
-
-export function buildTelegramAlreadyConfirmedMessage(order = {}) {
-  return `⚠️ Order ini sudah dikonfirmasi sebelumnya.
-
-Order ID :
-${order.orderId || '-'}
-
-Status :
-🟢 PAID
-
-Waktu Konfirmasi :
-${formatOrderTime(order.confirmedAt)}`
-}
-
-export function buildTelegramFailedMessage() {
-  return `❌ Gagal mengkonfirmasi pembayaran.
-
-Backend tidak merespon.
-
-Silakan coba kembali.`
-}
-
 export function getWebhookBaseUrl(req) {
   const proto = (req?.headers?.['x-forwarded-proto'] || 'https').toString().split(',')[0].trim()
   const host = (req?.headers?.['x-forwarded-host'] || req?.headers?.host || process.env.VERCEL_URL || '').toString().split(',')[0].trim()
@@ -230,41 +160,3 @@ export function getWebhookBaseUrl(req) {
   return `${proto}://${host.replace(/\/$/, '')}`
 }
 
-export function getTelegramWebhookUrl(req) {
-  const configuredBaseUrl = String(process.env.APP_BASE_URL || process.env.SITE_URL || '').trim().replace(/\/$/, '')
-  const baseUrl = configuredBaseUrl || getWebhookBaseUrl(req)
-  if (!baseUrl) return ''
-  return `${baseUrl}/api/telegram-webhook`
-}
-
-export async function ensureTelegramWebhook(req) {
-  const token = String(process.env.TELEGRAM_BOT_TOKEN || '').trim()
-  const webhookUrl = getTelegramWebhookUrl(req)
-
-  if (!token || !webhookUrl) {
-    return { ok: false, skipped: true, webhookUrl }
-  }
-
-  try {
-    const response = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        url: webhookUrl,
-        drop_pending_updates: false,
-        allowed_updates: ['callback_query'],
-      }),
-    })
-
-    const data = await response.json().catch(() => null)
-
-    if (!response.ok || !data?.ok) {
-      throw new Error(data?.description || 'Failed to set Telegram webhook')
-    }
-
-    return { ok: true, webhookUrl, result: data.result || null }
-  } catch (error) {
-    console.warn('[TELEGRAM WEBHOOK] setup failed', { webhookUrl, message: error.message })
-    return { ok: false, webhookUrl, message: error.message }
-  }
-}

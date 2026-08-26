@@ -84,7 +84,6 @@ function mapRow(row) {
     paymentMethod,
     paymentStatus,
     status: paymentStatus,
-    telegramMessageId: row.telegram_message_id ?? row.telegramMessageId ?? null,
     confirmedAt: row.confirmed_at ?? row.confirmedAt ?? null,
     createdAt: row.created_at ?? row.createdAt ?? nowIso(),
     updatedAt: row.updated_at ?? row.updatedAt ?? nowIso(),
@@ -121,10 +120,6 @@ function buildOrderRow(order = {}) {
     updated_at: nowIso(),
   }
 
-  if (order.telegramMessageId !== undefined && order.telegramMessageId !== null && order.telegramMessageId !== '') {
-    row.telegram_message_id = order.telegramMessageId
-  }
-
   if (order.confirmedAt !== undefined && order.confirmedAt !== null && order.confirmedAt !== '') {
     row.confirmed_at = order.confirmedAt
   }
@@ -149,10 +144,6 @@ function toDbPatch(patch = {}) {
   if (patch.total !== undefined) next.total = toNumber(patch.total, 0)
   if (patch.paymentMethod !== undefined || patch.method !== undefined) next.payment_method = normalizePaymentMethod(patch.paymentMethod ?? patch.method)
   if (patch.paymentStatus !== undefined || patch.status !== undefined) next.payment_status = normalizePaymentStatus(patch.paymentStatus ?? patch.status)
-
-  if (patch.telegramMessageId !== undefined && patch.telegramMessageId !== null && patch.telegramMessageId !== '') {
-    next.telegram_message_id = patch.telegramMessageId
-  }
 
   if (patch.confirmedAt !== undefined && patch.confirmedAt !== null && patch.confirmedAt !== '') {
     next.confirmed_at = patch.confirmedAt
@@ -272,10 +263,6 @@ export async function updateOrder(orderId, patch = {}) {
     mapped.confirmedAt = patch.confirmedAt ?? null
   }
 
-  if (patch.telegramMessageId !== undefined) {
-    mapped.telegramMessageId = patch.telegramMessageId ?? null
-  }
-
   return clone(mapped)
 }
 
@@ -323,37 +310,3 @@ export async function createOrderRecord(data = {}) {
   return clone(mapRow(inserted))
 }
 
-export async function attachTelegramMessageId(orderId, telegramMessageId) {
-  if (!telegramMessageId) {
-    return getOrder(orderId)
-  }
-
-  return updateOrder(orderId, { telegramMessageId })
-}
-
-export async function confirmOrder(orderId, extraPatch = {}) {
-  const resolvedOrderId = String(orderId || '').trim()
-  const current = await getOrder(resolvedOrderId)
-
-  if (!current) {
-    return { ok: false, status: 404, message: 'Order not found' }
-  }
-
-  if (normalizePaymentStatus(current.paymentStatus || current.status) === 'paid') {
-    return { ok: false, status: 409, message: 'Order already confirmed', order: clone(current) }
-  }
-
-  const updated = await updateOrder(resolvedOrderId, {
-    paymentStatus: 'paid',
-    confirmedAt: extraPatch.confirmedAt || current.confirmedAt || nowIso(),
-    ...extraPatch,
-  })
-
-  if (!updated) {
-    return { ok: false, status: 404, message: 'Order not found' }
-  }
-
-  log('CONFIRM ORDER', `UUID: ${resolvedOrderId} UPDATE SUCCESS`)
-
-  return { ok: true, order: updated }
-}
