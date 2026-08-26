@@ -78,7 +78,7 @@ export function getContactWhatsAppUrl() {
 }
 
 const STATUS_LABELS = {
-  [PAYMENT_STATUS.PENDING]: 'Menunggu Konfirmasi Pesanan',
+  [PAYMENT_STATUS.PENDING]: 'Menunggu Pembayaran',
   [PAYMENT_STATUS.PAID]: 'Pembayaran Berhasil',
   [PAYMENT_STATUS.PROCESSING]: 'Pesanan Diproses',
   [PAYMENT_STATUS.COMPLETED]: 'Pesanan Selesai',
