@@ -4705,3 +4705,328 @@ body, .app-shell, .app-shell-menu {
     font-size: .84rem;
   }
 }
+
+/* ============================================================= */
+/* KlikQRIS Payment UI - AIME-Dimsum Burgundy / Cream Theme      */
+/* ============================================================= */
+.klikqris-payment-shell {
+  width: min(760px, 100%);
+  margin: 0 auto;
+  overflow: hidden;
+  padding: 0 !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(123, 24, 36, 0.15) !important;
+}
+
+.klikqris-payment-head {
+  padding: 24px 22px 18px;
+  text-align: center;
+}
+
+.klikqris-payment-head h1 {
+  margin: 4px 0 8px;
+  color: #28221F;
+  font-size: clamp(1.55rem, 5vw, 2.2rem);
+  letter-spacing: -0.03em;
+}
+
+.klikqris-payment-head p:last-child {
+  max-width: 600px;
+  margin: 0 auto;
+  color: #666666;
+  line-height: 1.65;
+}
+
+.klikqris-payment-shell > .summary {
+  margin: 0 18px 16px;
+}
+
+.qris-payment-card {
+  position: relative;
+  margin: 0;
+  padding: 20px 18px 22px;
+  background: linear-gradient(180deg, #fff 0%, #fbf7ef 100%);
+  border-top: 1px solid rgba(196, 151, 102, 0.18);
+  border-bottom: 1px solid rgba(196, 151, 102, 0.18);
+  display: grid;
+  gap: 16px;
+  justify-items: center;
+  overflow: hidden;
+}
+
+.qris-payment-card::before,
+.qris-payment-card::after {
+  content: '';
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  background: #7B1824;
+  opacity: 0.96;
+}
+
+.qris-payment-card::before {
+  left: -30px;
+  top: 100px;
+  clip-path: polygon(0 0, 100% 0, 100% 58%, 58% 100%, 0 100%);
+}
+
+.qris-payment-card::after {
+  right: -30px;
+  bottom: 80px;
+  clip-path: polygon(42% 0, 100% 0, 100% 100%, 0 100%, 0 42%);
+}
+
+.qris-brand-mark {
+  display: flex;
+  gap: 5px;
+  align-items: flex-end;
+  height: 13px;
+}
+
+.qris-brand-mark span {
+  display: block;
+  width: 7px;
+  border-radius: 3px;
+  background: #7B1824;
+}
+
+.qris-brand-mark span:nth-child(1) { height: 8px; }
+.qris-brand-mark span:nth-child(2) { height: 13px; }
+.qris-brand-mark span:nth-child(3) { height: 10px; }
+
+.qris-scan-label {
+  font-weight: 800;
+  font-size: .84rem;
+  letter-spacing: .09em;
+  color: #7B1824;
+  text-align: center;
+}
+
+.qris-image-frame {
+  position: relative;
+  z-index: 1;
+  width: min(440px, calc(100vw - 72px));
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  padding: 14px;
+  background: #ffffff;
+  border: 10px solid #f1ece2;
+  outline: 2px solid rgba(123, 24, 36, 0.12);
+  border-radius: 18px;
+  box-shadow: 0 20px 46px rgba(40, 34, 31, 0.14);
+}
+
+.confirm-qris-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.qris-amount-block {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 4px;
+  text-align: center;
+}
+
+.qris-amount-block span {
+  color: #666;
+  font-size: .92rem;
+}
+
+.qris-amount-block strong {
+  font-size: clamp(2rem, 7vw, 3rem);
+  color: #28221F;
+  letter-spacing: -0.04em;
+}
+
+.qris-payment-meta {
+  position: relative;
+  z-index: 1;
+  width: min(560px, 100%);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.qris-payment-meta > div {
+  min-width: 0;
+  padding: 11px 10px;
+  border: 1px solid rgba(196, 151, 102, 0.22);
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 14px;
+  text-align: center;
+}
+
+.qris-payment-meta span,
+.qris-payment-meta strong {
+  display: block;
+}
+
+.qris-payment-meta span {
+  color: #777;
+  font-size: .78rem;
+  margin-bottom: 3px;
+}
+
+.qris-payment-meta strong {
+  color: #7B1824;
+  font-size: .92rem;
+  overflow-wrap: anywhere;
+}
+
+.qris-actions {
+  position: relative;
+  z-index: 2;
+  width: min(560px, 100%);
+  display: grid;
+  grid-template-columns: 1fr 64px;
+  gap: 12px;
+}
+
+.qris-download-btn {
+  min-height: 56px;
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+  border-radius: 16px;
+  border: 2px solid #7B1824;
+  background: #fff;
+  color: #7B1824;
+  font-size: 1.7rem;
+  font-weight: 800;
+  transition: .2s ease;
+}
+
+.qris-download-btn:hover {
+  transform: translateY(-2px);
+  background: #7B1824;
+  color: #fff;
+}
+
+.qris-check-btn {
+  min-height: 56px;
+}
+
+.qris-status-button {
+  width: calc(100% - 36px);
+  margin: 18px auto;
+  min-height: 58px;
+  border-radius: 16px !important;
+  font-size: 1rem;
+}
+
+.how-to-pay {
+  padding: 20px 18px 24px;
+  background: #fff;
+}
+
+.how-to-pay h3 {
+  margin: 0 0 18px;
+  font-size: 1.35rem;
+  color: #28221F;
+}
+
+.how-to-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  align-items: stretch;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.how-to-tab {
+  min-height: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  color: #28221F;
+}
+
+.how-to-tab.muted {
+  color: #8c8c8c;
+}
+
+.how-to-icon {
+  width: 34px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 2px solid currentColor;
+  border-radius: 9px;
+  color: #7B1824;
+  flex: 0 0 auto;
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.how-to-tab.muted .how-to-icon {
+  color: #9ea3ad;
+}
+
+.how-to-divider {
+  width: 1px;
+  background: rgba(123, 24, 36, 0.15);
+}
+
+.how-to-step {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 12px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.how-to-step-badge {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(123, 24, 36, 0.10);
+  color: #7B1824;
+  border: 1px solid rgba(123, 24, 36, 0.12);
+  font-weight: 800;
+}
+
+.how-to-step p {
+  margin: 0;
+  color: #555;
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .klikqris-payment-head {
+    padding-inline: 16px;
+  }
+
+  .klikqris-payment-shell > .summary {
+    margin-inline: 12px;
+  }
+
+  .qris-payment-meta {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .qris-actions {
+    grid-template-columns: 1fr 58px;
+  }
+
+  .how-to-tab {
+    flex-direction: column;
+    min-height: 92px;
+    padding: 6px 2px;
+  }
+
+  .how-to-tab strong {
+    font-size: .86rem;
+    line-height: 1.3;
+  }
+}
