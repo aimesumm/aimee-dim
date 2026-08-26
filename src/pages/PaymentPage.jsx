@@ -88,7 +88,9 @@ export default function PaymentPage() {
 
     try {
       const latest = await checkPayment(order.orderId)
-      if (!latest?.orderId) return
+      if (!latest?.orderId) {
+        throw new Error('Status pembayaran belum mengembalikan data order yang valid.')
+      }
 
       const normalized = mergeOrder(latest, order)
       setOrder(normalized)
@@ -122,7 +124,14 @@ export default function PaymentPage() {
     const load = async () => {
       try {
         const latest = await checkPayment(orderId)
-        if (cancelled || !latest?.orderId) return
+        if (cancelled) return
+
+        // The status endpoint is authoritative, but the route state may already
+        // contain the complete order. Only replace it when a valid order is returned.
+        if (!latest?.orderId) {
+          setBootstrapping(false)
+          return
+        }
 
         const normalized = mergeOrder(latest)
         setOrder(normalized)
@@ -265,16 +274,43 @@ export default function PaymentPage() {
         paymentMethod: selectedMethod,
       })
 
-      const nextOrder = normalizeOrder(created)
+      let nextOrder = normalizeOrder(created)
+
+      // Untuk QRIS, bentuk transaksi KlikQRIS sebelum berpindah halaman.
+      // Dengan begitu halaman pembayaran selalu menerima QRIS yang sudah tersedia
+      // dan tidak sempat menampilkan "order tidak ditemukan".
+      if (String(selectedMethod).toUpperCase() === 'QRIS') {
+        const qrisResponse = await createQris({
+          orderId: created.orderId,
+          amount: Number(created.total || subtotal || 0),
+          keterangan: `Pembayaran Order ${created.orderId}`,
+        })
+
+        nextOrder = normalizeOrder(
+          qrisResponse?.order || {
+            ...created,
+            qris: qrisResponse?.qris || null,
+            total: qrisResponse?.totalAmount ?? created.total,
+            paymentStatus: 'pending',
+            status: 'pending',
+          },
+          nextOrder,
+        )
+
+        if (!nextOrder?.orderId || !nextOrder?.qris) {
+          throw new Error('QRIS belum berhasil dibuat. Silakan coba lagi.')
+        }
+      }
+
       writeLastOrder(nextOrder)
       checkoutTransitionRef.current = true
 
       if (String(selectedMethod).toUpperCase() === 'CASH') {
         clearCart()
-        navigate(`/success/cash/${created.orderId}`, { replace: true, state: { order: nextOrder } })
+        navigate(`/success/cash/${nextOrder.orderId}`, { replace: true, state: { order: nextOrder } })
       } else {
-        navigate(`/payment/qris/${created.orderId}`, { replace: true, state: { order: nextOrder } })
-        window.setTimeout(() => clearCart(), 0)
+        clearCart()
+        navigate(`/payment/qris/${nextOrder.orderId}`, { replace: true, state: { order: nextOrder } })
       }
     } catch (err) {
       setError(err.message || 'Checkout gagal.')
