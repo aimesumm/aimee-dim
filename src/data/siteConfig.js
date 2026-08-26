@@ -43,8 +43,6 @@ export const ORDER_STATUS_STEPS = [
 ]
 
 export const OWNER_WHATSAPP = import.meta.env.VITE_OWNER_WHATSAPP || ''
-export const TELEGRAM_BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || ''
-
 export const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL || ''
 
 export const socialLinks = [
@@ -155,35 +153,8 @@ export function getCustomerOrderMessage(order = {}) {
   return getOwnerOrderMessage(order)
 }
 
-export function getFollowupMessage(order = {}) {
-  return `Halo kakak, pembayaran untuk order ${order.orderId || '-'} masih belum dikonfirmasi. Mohon bantu cek dan konfirmasi ya.`
-}
-
 export function getWhatsAppOrderUrl(order = {}) {
   const phone = String(OWNER_WHATSAPP || '').replace(/[^\d]/g, '')
   if (!phone) return ''
   return `https://wa.me/${phone}?text=${encodeURIComponent(getOwnerOrderMessage(order))}`
-}
-
-export function getAdminContactUrl(order = {}) {
-  const phone = String(OWNER_WHATSAPP || '').replace(/[^\d]/g, '')
-  if (phone) {
-    return {
-      href: `https://wa.me/${phone}?text=${encodeURIComponent(getFollowupMessage(order))}`,
-      label: 'WhatsApp Admin',
-    }
-  }
-
-  const telegram = String(TELEGRAM_BOT_USERNAME || '').replace(/^@/, '').trim()
-  if (telegram) {
-    return {
-      href: `https://t.me/${telegram}`,
-      label: 'Telegram Admin',
-    }
-  }
-
-  return {
-    href: '#',
-    label: 'Admin',
-  }
 }
