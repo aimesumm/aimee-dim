@@ -1,107 +1,185 @@
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { currency } from '../data/siteConfig'
 import OrderSummary from './OrderSummary'
 
-function QrisPreview({ qris, orderId, total, countdown, generating, error, onRetry }) {
-  const nominal = Number(qris?.nominal ?? total ?? 0)
+function PhoneIcon() {
+  return <span className="how-to-icon">⌁</span>
+}
 
-  if (!qris?.link_qris) {
-    if (generating) {
-      return (
-        <div className="confirm-qris-box">
-          <div className="payment-loader-box">
-            <div className="loading-spinner" />
-            <strong>Sedang membuat QRIS...</strong>
-            <p>Menunggu respons API converter QRIS.</p>
-          </div>
-        </div>
-      )
-    }
+function WalletIcon() {
+  return <span className="how-to-icon">▣</span>
+}
 
+function DownloadIcon() {
+  return <span aria-hidden="true">⇩</span>
+}
+
+function getQrisSource(qris) {
+  return qris?.qris_url || qris?.qris_image || ''
+}
+
+function getFileName(orderId) {
+  return `QRIS-${orderId || 'AIME-Dimsum'}.png`
+}
+
+function QrisPreview({ qris, orderId, total, generating, error, onRetry }) {
+  const source = getQrisSource(qris)
+  const amount = Number(qris?.total_amount ?? total ?? 0)
+  const expiresAt = useMemo(() => qris?.expired_at ? new Date(qris.expired_at.replace(' ', 'T')).getTime() : 0, [qris?.expired_at])
+  const [now, setNow] = useState(Date.now())
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  if (!source) {
     return (
-      <div className="confirm-qris-box">
-        <div className="payment-error-box">
-          <strong>Gagal generate QRIS</strong>
-          <p>{error || 'QR belum tersedia.'}</p>
-          <button className="primary-btn" type="button" onClick={onRetry} disabled={generating}>
-            Coba Lagi
-          </button>
+      <div className="qris-payment-card">
+        <div className="payment-loader-box">
+          {generating ? (
+            <>
+              <div className="loading-spinner" />
+              <strong>Membuat QRIS dinamis...</strong>
+              <p>QRIS sedang dibuat oleh KlikQRIS.</p>
+            </>
+          ) : (
+            <>
+              <strong>QRIS belum tersedia</strong>
+              <p>{error || 'Terjadi kendala saat membuat kode pembayaran.'}</p>
+              <button className="primary-btn" type="button" onClick={onRetry} disabled={generating}>Coba Lagi</button>
+            </>
+          )}
         </div>
       </div>
     )
   }
 
+  const isDataImage = source.startsWith('data:image')
+  const downloadSource = source
+  const readableExpiry = expiresAt
+    ? new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit' }).format(expiresAt)
+    : '-'
+  const remainingMs = Math.max(0, expiresAt - now)
+  const remainingMinutes = Math.floor(remainingMs / 60000)
+  const remainingSeconds = Math.floor((remainingMs % 60000) / 1000)
+  const remainingLabel = expiresAt ? `${String(remainingMinutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}` : '-'
+
   return (
-    <div className="confirm-qris-box">
-      <div className="confirm-qris-image-wrap">
-        <img src={qris.link_qris} alt="QRIS pembayaran" className="confirm-qris-image" />
+    <div className="qris-payment-card">
+      <div className="qris-brand-mark" aria-hidden="true">
+        <span />
+        <span />
+        <span />
       </div>
 
-      <div className="confirm-qris-meta">
-        <div className="summary-row"><span>UID</span><strong>{orderId || '-'}</strong></div>
-        <div className="summary-row"><span>Total bayar</span><strong>{currency.format(nominal)}</strong></div>
-        <div className="summary-row"><span>Status QRIS</span><strong>{qris?.status || 'success'}</strong></div>
-        {countdown ? <div className="summary-row"><span>Sisa waktu</span><strong>{countdown}</strong></div> : null}
+      <div className="qris-scan-label">SCAN QRIS UNTUK MEMBAYAR</div>
+      <div className="qris-image-frame">
+        <img src={source} alt="QRIS pembayaran AIME-Dimsum" className="confirm-qris-image" />
+      </div>
+
+      <div className="qris-amount-block">
+        <span>Jumlah Tagihan</span>
+        <strong>{currency.format(amount)}</strong>
+      </div>
+
+      <div className="qris-payment-meta">
+        <div><span>Metode Pembayaran</span><strong>QRIS</strong></div>
+        <div><span>Status</span><strong>{qris?.status || 'PENDING'}</strong></div>
+        <div><span>Berlaku sampai</span><strong>{readableExpiry}</strong></div>
+        <div><span>Sisa waktu</span><strong>{remainingLabel}</strong></div>
+      </div>
+
+      <div className="qris-actions">
+        <button className="primary-btn qris-check-btn" type="button" onClick={onRetry} disabled={generating} hidden={!error}>
+          Buat Ulang QRIS
+        </button>
+        <a
+          className="qris-download-btn"
+          href={downloadSource}
+          download={!isDataImage ? getFileName(orderId) : getFileName(orderId)}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Download QRIS"
+        >
+          <DownloadIcon />
+        </a>
       </div>
     </div>
   )
 }
 
-function CashPreview({ orderId, total }) {
+function HowToPay() {
   return (
-    <div className="cash-confirm-box">
-      <div className="cash-confirm-badge">💵</div>
-      <h3>Menunggu konfirmasi pesanan</h3>
-      <div className="summary-row"><span>UID</span><strong>{orderId || '-'}</strong></div>
-      <div className="summary-row"><span>Total bayar</span><strong>{currency.format(Number(total || 0))}</strong></div>
-    </div>
+    <section className="how-to-pay">
+      <h3>How to Pay:</h3>
+      <div className="how-to-tabs">
+        <div className="how-to-tab active">
+          <PhoneIcon />
+          <strong>Pay with the same phone</strong>
+        </div>
+        <div className="how-to-divider" />
+        <div className="how-to-tab muted">
+          <WalletIcon />
+          <strong>Pay with other phone</strong>
+        </div>
+      </div>
+
+      <div className="how-to-step">
+        <span className="how-to-step-badge">1</span>
+        <p><strong>Screenshot</strong> the QRIS code.</p>
+      </div>
+      <div className="how-to-step">
+        <span className="how-to-step-badge">2</span>
+        <p><strong>Open QR payment</strong> di aplikasi mobile banking atau e-wallet.</p>
+      </div>
+      <div className="how-to-step">
+        <span className="how-to-step-badge">3</span>
+        <p>Scan / pilih QRIS pada aplikasi pembayaran, lalu pastikan <strong>nominal sesuai</strong>.</p>
+      </div>
+      <div className="how-to-step">
+        <span className="how-to-step-badge">4</span>
+        <p>Selesaikan pembayaran. Status order akan diperbarui <strong>otomatis</strong>.</p>
+      </div>
+    </section>
   )
 }
 
 export default function PaymentConfirmationCard({
   order,
   isQris,
-  attemptsLeft,
   checking,
   onConfirm,
   qris,
-  countdown,
   generating,
   qrisError,
   onRetryQris,
-  children,
 }) {
   return (
     <motion.section
-      className="payment-confirmation-card glass-card"
+      className="payment-confirmation-card glass-card klikqris-payment-shell"
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
     >
-      <OrderSummary order={order} />
-
-      {isQris ? (
-        <QrisPreview
-          qris={qris}
-          orderId={order?.orderId}
-          total={order?.total}
-          countdown={countdown}
-          generating={generating}
-          error={qrisError}
-          onRetry={onRetryQris}
-        />
-      ) : (
-        <CashPreview orderId={order?.orderId} total={order?.total} />
-      )}
-
-      <div className="confirm-actions">
-        <button className="primary-btn checkout-continue confirm-order-btn" type="button" onClick={onConfirm} disabled={checking || attemptsLeft <= 0}>
-          {checking ? 'Mengecek...' : attemptsLeft > 0 ? `Konfirmasi Pesanan (${attemptsLeft})` : 'Tiket habis'}
-        </button>
+      <div className="klikqris-payment-head">
+        <p className="eyebrow">Pembayaran QRIS Dinamis</p>
+        <h1>Bayar dengan QRIS</h1>
+        <p>Gunakan mobile banking atau e-wallet pilihan Anda. Setelah pembayaran berhasil, halaman akan berpindah otomatis ke halaman sukses.</p>
       </div>
 
-      {children}
+      <OrderSummary order={{ ...order, total: Number(qris?.total_amount ?? order?.total ?? 0) }} />
+
+      {isQris ? <QrisPreview qris={qris} orderId={order?.orderId} total={order?.total} generating={generating} error={qrisError} onRetry={onRetryQris} /> : null}
+
+      <button className="primary-btn qris-status-button" type="button" onClick={onConfirm} disabled={checking || generating}>
+        {checking ? 'Checking Payment Status...' : 'Check Payment Status'}
+      </button>
+
+      {qrisError ? <div className="notice error">{qrisError}</div> : null}
+
+      <HowToPay />
     </motion.section>
   )
 }

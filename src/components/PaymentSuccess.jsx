@@ -63,7 +63,7 @@ export default function PaymentSuccess({ order, variant = 'qris' }) {
         <MapPreview />
         <div className="success-note">
           <strong>Langkah berikutnya</strong>
-          <p>Tekan tombol dibawah ini untuk mengirim pesanan yang sudah kamu order.</p>
+          <p>Pembayaran sudah terverifikasi otomatis. Pesanan Anda tersimpan dan dapat diproses oleh AIME-Dimsum.</p>
         </div>
       </div>
 

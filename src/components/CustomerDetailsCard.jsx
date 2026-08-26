@@ -2,7 +2,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { useOrderDraft } from '../context/OrderDraftContext'
 
-export default function CustomerDetailsCard({ hideNote = false, title = 'Customer information', copy = 'Data ini akan ikut terkirim ke backend dan ke pesan admin untuk konfirmasi pesanan.' }) {
+export default function CustomerDetailsCard({ hideNote = false, title = 'Customer information', copy = 'Data ini digunakan untuk membuat detail order dan pembayaran Anda.' }) {
   const { customer, setCustomer } = useOrderDraft()
 
   return (
@@ -56,7 +56,7 @@ export default function CustomerDetailsCard({ hideNote = false, title = 'Custome
             <textarea
               value={customer.note}
               onChange={(event) => setCustomer((prev) => ({ ...prev, note: event.target.value }))}
-              placeholder="Tambah catatan tambahan untuk admin"
+              placeholder="Tambah catatan tambahan"
               rows={3}
             />
           </label>
