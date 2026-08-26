@@ -6,12 +6,10 @@ export async function createQris(payload) {
   })
 
   const data = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error(data.message || 'Gagal membuat QRIS')
-  if (data.status !== 'success') throw new Error(data.message || 'Gagal membuat QRIS')
+  if (!response.ok) throw new Error(data.message || 'Gagal membuat QRIS KlikQRIS')
+  if (data.status !== 'success') throw new Error(data.message || 'Gagal membuat QRIS KlikQRIS')
   return data
 }
-
-export const createQRIS = createQris
 
 export async function createOrder(payload) {
   const response = await fetch('/api/create-order', {
@@ -25,15 +23,12 @@ export async function createOrder(payload) {
   return data
 }
 
-export async function getOrderStatus(orderId) {
-  const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/status`)
-  const data = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error(data.message || 'Gagal mengambil status order')
-  return data
-}
-
 export async function checkPayment(orderId) {
-  const response = await fetch(`/api/check-payment?orderId=${encodeURIComponent(orderId)}`)
+  const response = await fetch(`/api/check-payment?orderId=${encodeURIComponent(orderId)}`, {
+    method: 'GET',
+    cache: 'no-store',
+  })
+
   const data = await response.json().catch(() => ({}))
   if (!response.ok) throw new Error(data.message || 'Gagal mengecek pembayaran')
   return data
