@@ -92,7 +92,7 @@ export default async function handler(req, res) {
       ...(callbackUrl ? { callback_url: callbackUrl } : {}),
     }
 
-    const response = await fetch(`${baseUrl}/qris/create`, {
+    const response = await fetch(`${baseUrl}/sandbox/qris/create`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
