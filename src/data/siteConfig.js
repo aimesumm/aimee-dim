@@ -75,6 +75,11 @@ export function getContactWhatsAppUrl() {
   return `https://wa.me/${phone}`
 }
 
+// Backward-compatible helper used by payment failure/contact pages.
+export function getAdminContactUrl() {
+  return getContactWhatsAppUrl()
+}
+
 const STATUS_LABELS = {
   [PAYMENT_STATUS.PENDING]: 'Menunggu Pembayaran',
   [PAYMENT_STATUS.PAID]: 'Pembayaran Berhasil',
