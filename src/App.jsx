@@ -40,10 +40,8 @@ export default function App() {
                 <Route path="/order" element={<OrderPage />} />
                 <Route path="/checkout" element={<Navigate to="/order" replace />} />
                 <Route path="/payment" element={<PaymentPage />} />
-                <Route path="/payment-confirmation" element={<PaymentPage />} />
                 <Route path="/payment/:method/:orderId" element={<PaymentPage />} />
-                <Route path="/payment-confirmation/:method/:orderId" element={<PaymentPage />} />
-                <Route path="/pay/:method/:orderId" element={<Navigate to="/payment-confirmation/:method/:orderId" replace />} />
+                <Route path="/pay/:method/:orderId" element={<Navigate to="/payment/:method/:orderId" replace />} />
                 <Route path="/success/qris/:orderId" element={<QrisSuccessPage />} />
                 <Route path="/success/cash/:orderId" element={<CashSuccessPage />} />
                 <Route path="/payment-failed/:orderId" element={<PaymentFailedPage />} />
