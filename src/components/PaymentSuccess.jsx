@@ -39,7 +39,8 @@ function MapPreview() {
 
 export default function PaymentSuccess({ order, variant = 'qris' }) {
   const paymentMethod = String(order?.paymentMethod || order?.method || variant || '').toUpperCase()
-  const isPaid = String(order?.paymentStatus || order?.status || '').toLowerCase() === 'paid'
+  const isPaid = ['paid', 'completed'].includes(String(order?.paymentStatus || order?.status || '').toLowerCase())
+  const finalAmount = Number(order?.qris?.total_amount ?? order?.total ?? 0)
 
   return (
     <motion.div
@@ -50,11 +51,12 @@ export default function PaymentSuccess({ order, variant = 'qris' }) {
     >
       <div className="success-hero">
         <p className="eyebrow">{paymentMethod === 'CASH' ? 'Pembayaran tunai berhasil' : 'Pembayaran QRIS berhasil'}</p>
-        <h2>{isPaid ? getStatusLabel(order.status) : 'Status berhasil diperbarui'}</h2>
+        <h2>{isPaid ? 'Pembayaran berhasil! 🎉' : 'Status berhasil diperbarui'}</h2>
+        <p className="success-promo-copy">Pesanan kamu sudah terverifikasi otomatis. Tidak perlu konfirmasi manual — AIME-Dimsum siap memproses pesananmu.</p>
         <p className="qris-note">
           Order ID {order.orderId} • {getMethodLabel(order.method)} • {formatOrderTime(order.time)}
         </p>
-        <div className="payment-total">{currency.format(Number(order.total || 0))}</div>
+        <div className="payment-total">{currency.format(finalAmount)}</div>
       </div>
 
       <OrderSummary order={order} />
