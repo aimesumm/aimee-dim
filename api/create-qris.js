@@ -3,9 +3,9 @@ import { getOrder, updateOrder } from './_store.js'
 const DEFAULT_BASE_URL = 'https://klikqris.com/api'
 
 function getConfig() {
-  const apiKey = String(process.env.KLIKRIS_API_KEY || process.env.KLIQRIS_API_KEY || '').trim()
-  const merchantId = String(process.env.KLIKRIS_MERCHANT_ID || process.env.KLIQRIS_MERCHANT_ID || '').trim()
-  const baseUrl = String(process.env.KLIKRIS_BASE_URL || process.env.KLIQRIS_BASE_URL || DEFAULT_BASE_URL).trim().replace(/\/$/, '')
+  const apiKey = String(process.env.KLIKRIS_API_KEY || '').trim()
+  const merchantId = String(process.env.KLIKRIS_MERCHANT_ID || '').trim()
+  const baseUrl = String(process.env.KLIKRIS_BASE_URL || DEFAULT_BASE_URL).trim().replace(/\/$/, '')
   return { apiKey, merchantId, baseUrl }
 }
 
@@ -20,15 +20,15 @@ function getBaseUrl(req) {
 }
 
 function normalizeQris(data = {}, requestTotal = 0) {
-  const totalAmount = Number(data.total_amount ?? requestTotal)
   return {
     order_id: data.order_id,
     nama_toko: data.nama_toko,
     tanggal: data.tanggal,
     amount: Number(data.amount ?? requestTotal),
     amount_uniq: Number(data.amount_uniq ?? 0),
-    total_amount: totalAmount,
+    total_amount: Number(data.total_amount ?? requestTotal),
     status: String(data.status || 'PENDING').toUpperCase(),
+    notified_expired: Number(data.notified_expired ?? 0),
     qris_url: data.qris_url || null,
     qris_image: data.qris_image || null,
     expired_at: data.expired_at || null,
@@ -41,6 +41,12 @@ function normalizeQris(data = {}, requestTotal = 0) {
     redirect_url: data.redirect_url || null,
     direct_url: data.direct_url || null,
   }
+}
+
+function hasUsableQris(qris = {}) {
+  const status = String(qris.status || '').toUpperCase()
+  const source = qris.qris_image || qris.qris_url
+  return Boolean(qris.signature && source && ['PENDING', 'SUCCESS', 'PAID'].includes(status))
 }
 
 export default async function handler(req, res) {
@@ -72,12 +78,24 @@ export default async function handler(req, res) {
     }
 
     const existing = order.qris || null
-    if (existing?.status && ['PENDING', 'SUCCESS', 'PAID'].includes(String(existing.status).toUpperCase()) && existing?.signature && existing?.qris_url) {
+    const existingStatus = String(existing?.status || '').toUpperCase()
+
+    if (hasUsableQris(existing)) {
       return res.status(200).json({
         status: 'success',
         message: 'QRIS already exists',
+        orderId,
         qris: existing,
         totalAmount: Number(existing.total_amount ?? order.total ?? requestedAmount),
+        order,
+      })
+    }
+
+    if (existingStatus === 'EXPIRED') {
+      return res.status(409).json({
+        message: 'QRIS untuk order ini sudah kedaluwarsa. Silakan buat order baru.',
+        qris: existing,
+        order,
       })
     }
 
@@ -103,7 +121,7 @@ export default async function handler(req, res) {
     })
 
     const data = await response.json().catch(() => ({}))
-    if (!response.ok || data?.status !== true) {
+    if (!response.ok || data?.status !== true || !data?.data) {
       return res.status(response.ok ? 400 : response.status).json({
         message: data?.message || 'KlikQRIS gagal membuat transaksi.',
         details: data,
@@ -111,15 +129,20 @@ export default async function handler(req, res) {
     }
 
     const qris = normalizeQris(data.data, requestedAmount)
-    const updated = await updateOrder(orderId, { qris })
+    const finalTotal = Number(qris.total_amount || requestedAmount)
+    const updated = await updateOrder(orderId, {
+      qris,
+      total: finalTotal,
+      paymentStatus: 'pending',
+    })
 
     return res.status(200).json({
       status: 'success',
       message: data.message || 'Transaction Created Successfully',
       orderId,
       qris,
-      totalAmount: Number(qris.total_amount || requestedAmount),
-      order: updated,
+      totalAmount: finalTotal,
+      order: updated || { ...order, qris, total: finalTotal, paymentStatus: 'pending', status: 'pending' },
     })
   } catch (error) {
     console.error('[CREATE QRIS] FAILED', error)

@@ -1,12 +1,13 @@
 import { getOrder, updateOrder } from './_store.js'
+import { sendOrderToTelegram } from './_telegram.js'
 
 const DEFAULT_BASE_URL = 'https://klikqris.com/api'
 
 function getConfig() {
   return {
-    apiKey: String(process.env.KLIKRIS_API_KEY || process.env.KLIQRIS_API_KEY || '').trim(),
-    merchantId: String(process.env.KLIKRIS_MERCHANT_ID || process.env.KLIQRIS_MERCHANT_ID || '').trim(),
-    baseUrl: String(process.env.KLIKRIS_BASE_URL || process.env.KLIQRIS_BASE_URL || DEFAULT_BASE_URL).trim().replace(/\/$/, ''),
+    apiKey: String(process.env.KLIKRIS_API_KEY || '').trim(),
+    merchantId: String(process.env.KLIKRIS_MERCHANT_ID || '').trim(),
+    baseUrl: String(process.env.KLIKRIS_BASE_URL || DEFAULT_BASE_URL).trim().replace(/\/$/, ''),
   }
 }
 
@@ -15,6 +16,28 @@ function statusToPaymentStatus(status) {
   if (normalized === 'SUCCESS' || normalized === 'PAID') return 'paid'
   if (normalized === 'EXPIRED') return 'expired'
   return 'pending'
+}
+
+function shouldNotifyTelegram(order, paymentStatus) {
+  if (paymentStatus !== 'paid') return false
+  return !String(order?.qris?.telegram_notified_at || '').trim()
+}
+
+async function notifyTelegramOnce(order) {
+  if (!shouldNotifyTelegram(order, 'paid')) return order
+
+  try {
+    const telegramResult = await sendOrderToTelegram(order)
+    if (!telegramResult?.sent) return order
+    const qris = {
+      ...(order.qris || {}),
+      telegram_notified_at: new Date().toISOString(),
+    }
+    return (await updateOrder(order.orderId, { qris })) || { ...order, qris }
+  } catch (error) {
+    console.error('[TELEGRAM] PAYMENT NOTIFICATION FAILED', { orderId: order.orderId, message: error.message })
+    return order
+  }
 }
 
 export default async function handler(req, res) {
@@ -46,6 +69,7 @@ export default async function handler(req, res) {
     if (!response.ok || data?.status !== true) {
       return res.status(response.ok ? 400 : response.status).json({
         message: data?.message || 'Gagal mengambil status dari KlikQRIS.',
+        details: data,
       })
     }
 
@@ -66,15 +90,23 @@ export default async function handler(req, res) {
     }
 
     const paymentStatus = statusToPaymentStatus(remote.status)
-    const updated = await updateOrder(orderId, {
+    let updated = await updateOrder(orderId, {
       qris,
+      total: qris.total_amount,
       paymentStatus,
       ...(paymentStatus === 'paid' ? { confirmedAt: remote.paid_at || new Date().toISOString() } : {}),
     })
 
+    if (!updated) updated = { ...order, qris, total: qris.total_amount, paymentStatus, status: paymentStatus }
+
+    if (paymentStatus === 'paid') {
+      updated = await notifyTelegramOnce(updated)
+    }
+
     return res.status(200).json({
-      ...(updated || order),
-      qris,
+      ...updated,
+      qris: updated.qris || qris,
+      total: Number(updated.total ?? qris.total_amount ?? order.total ?? 0),
       paymentStatus,
       status: paymentStatus,
     })

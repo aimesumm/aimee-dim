@@ -1,5 +1,6 @@
 import { createOrderRecord } from './_store.js'
 import { formatOrderTime, getMethodLabel, getOrderItemsCount, getStatusLabel } from './_shared.js'
+import { sendOrderToTelegram } from './_telegram.js'
 
 function buildResponse(order) {
   return {
@@ -39,6 +40,16 @@ export default async function handler(req, res) {
       paymentStatus: paymentMethod === 'CASH' ? 'paid' : 'pending',
       ...(paymentMethod === 'CASH' ? { confirmedAt: new Date().toISOString() } : {}),
     })
+
+    // Tunai is already considered paid at checkout, so the owner receives the order immediately.
+    // QRIS is sent only after KlikQRIS reports SUCCESS/PAID through webhook or status check.
+    if (paymentMethod === 'CASH') {
+      try {
+        await sendOrderToTelegram(created)
+      } catch (telegramError) {
+        console.error('[TELEGRAM] CASH ORDER NOTIFICATION FAILED', { orderId: created.orderId, message: telegramError.message })
+      }
+    }
 
     return res.status(200).json(buildResponse(created))
   } catch (error) {
