@@ -44,6 +44,7 @@ function normalizeQris(data = {}, requestTotal = 0) {
 }
 
 function hasUsableQris(qris = {}) {
+  qris = qris || {}
   const status = String(qris.status || '').toUpperCase()
   const source = qris.qris_image || qris.qris_url
   return Boolean(qris.signature && source && ['PENDING', 'SUCCESS', 'PAID'].includes(status))
