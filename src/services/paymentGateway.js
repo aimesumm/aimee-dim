@@ -8,6 +8,9 @@ export async function createQris(payload) {
   const data = await response.json().catch(() => ({}))
   if (!response.ok) throw new Error(data.message || 'Gagal membuat QRIS KlikQRIS')
   if (data.status !== 'success') throw new Error(data.message || 'Gagal membuat QRIS KlikQRIS')
+  if (!data.qris || typeof data.qris !== 'object') {
+    throw new Error('KlikQRIS berhasil dipanggil tetapi data QRIS tidak ditemukan.')
+  }
   return data
 }
 
