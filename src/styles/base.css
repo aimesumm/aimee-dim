@@ -4573,7 +4573,7 @@ body, .app-shell, .app-shell-menu {
 /* Final KlikQRIS payment experience                             */
 /* ============================================================= */
 .klikqris-payment-shell {
-  width: min(760px, 100%);
+  width: min(560px, 100%);
   margin: 0 auto;
   overflow: hidden;
   padding: 0 !important;
@@ -4583,140 +4583,49 @@ body, .app-shell, .app-shell-menu {
   box-shadow: 0 24px 60px rgba(40, 34, 31, 0.12);
 }
 
-.klikqris-payment-head {
-  position: relative;
-  overflow: hidden;
-  padding: 26px 22px 22px;
-  text-align: center;
-  background:
-    radial-gradient(circle at 12% 0%, rgba(196, 151, 102, 0.24), transparent 28%),
-    radial-gradient(circle at 88% 100%, rgba(123, 24, 36, 0.10), transparent 30%),
-    #fffaf2;
-  border-bottom: 1px solid rgba(196, 151, 102, 0.18);
-}
-
-.klikqris-brand-badge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 30px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: rgba(123, 24, 36, 0.08);
-  color: #7B1824;
-  border: 1px solid rgba(123, 24, 36, 0.12);
-  font-size: .76rem;
-  font-weight: 800;
-  letter-spacing: .05em;
-}
-
-.klikqris-payment-head h1 {
-  max-width: 620px;
-  margin: 12px auto 8px;
-  color: #28221F;
-  font-size: clamp(1.55rem, 5.2vw, 2.25rem);
-  line-height: 1.12;
-  letter-spacing: -.04em;
-}
-
-.klikqris-payment-head p {
-  max-width: 610px;
-  margin: 0 auto;
-  color: #666;
-  line-height: 1.65;
-  font-size: .94rem;
-}
-
-.klikqris-invoice-strip {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  padding: 14px 18px;
-  background: #fff;
-}
-
-.klikqris-invoice-strip > div {
-  min-width: 0;
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: #fbf7ef;
-  border: 1px solid rgba(196, 151, 102, 0.18);
-}
-
-.klikqris-invoice-strip span,
-.klikqris-invoice-strip strong {
-  display: block;
-}
-
-.klikqris-invoice-strip span {
-  margin-bottom: 4px;
-  color: #777;
-  font-size: .74rem;
-}
-
-.klikqris-invoice-strip strong {
-  overflow: hidden;
-  color: #28221F;
-  font-size: .88rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .klikqris-qr-stage {
   position: relative;
   display: grid;
   justify-items: center;
-  gap: 12px;
-  padding: 20px 18px 22px;
+  padding: 34px 24px 26px;
   overflow: hidden;
-  background: linear-gradient(180deg, #fff 0%, #fbf7ef 100%);
-  border-top: 1px solid rgba(196, 151, 102, 0.14);
-  border-bottom: 1px solid rgba(196, 151, 102, 0.14);
+  background: #f1f1f3;
 }
 
-.klikqris-qr-stage::before,
-.klikqris-qr-stage::after {
-  content: '';
+/* Red ribbon bundle above the QR code, tucked behind its top-left corner */
+.klikqris-qr-ribbon {
   position: absolute;
-  width: 84px;
-  height: 84px;
-  background: #7B1824;
-  opacity: .96;
+  z-index: 0;
+  background: #E11D48;
 }
 
-.klikqris-qr-stage::before {
-  top: 86px;
-  left: -32px;
-  clip-path: polygon(0 0, 100% 0, 100% 58%, 58% 100%, 0 100%);
+.klikqris-qr-ribbon-top {
+  top: 0;
+  left: 10%;
+  width: 44px;
+  height: 130px;
+  clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%);
 }
 
-.klikqris-qr-stage::after {
-  right: -32px;
-  bottom: 58px;
-  clip-path: polygon(42% 0, 100% 0, 100% 100%, 0 100%, 0 42%);
-}
-
-.klikqris-scan-label {
-  position: relative;
-  z-index: 1;
-  color: #7B1824;
-  font-size: .78rem;
-  font-weight: 900;
-  letter-spacing: .10em;
-  text-align: center;
+/* Red ribbon bundle below the QR code, tucked behind its bottom-right corner */
+.klikqris-qr-ribbon-bottom {
+  right: 6%;
+  bottom: 8%;
+  width: 150px;
+  height: 150px;
+  clip-path: polygon(100% 100%, 100% 22%, 22% 100%);
 }
 
 .klikqris-qr-frame {
   position: relative;
   z-index: 1;
-  width: min(430px, calc(100vw - 64px));
+  width: min(400px, calc(100vw - 88px));
   aspect-ratio: 1;
   display: grid;
   place-items: center;
-  padding: 12px;
+  padding: 14px;
   background: #fff;
-  border: 9px solid #efe8dc;
-  outline: 2px solid rgba(123, 24, 36, 0.12);
-  border-radius: 22px;
+  border-radius: 6px;
   box-shadow: 0 24px 50px rgba(40, 34, 31, 0.16);
 }
 
@@ -4727,139 +4636,66 @@ body, .app-shell, .app-shell-menu {
   background: #fff;
 }
 
-.klikqris-qr-helper {
-  position: relative;
-  z-index: 1;
-  max-width: 520px;
-  margin: 0;
-  color: #6d6d6d;
-  font-size: .82rem;
-  text-align: center;
-}
-
 .klikqris-billing-card {
   display: grid;
   gap: 4px;
-  margin: 16px 18px 0;
-  padding: 18px;
+  margin: 20px 24px 0;
   text-align: center;
-  background: #fff;
-  border: 1px solid rgba(196, 151, 102, 0.20);
-  border-radius: 20px;
 }
 
 .klikqris-billing-card > span {
-  color: #777;
-  font-size: .84rem;
+  color: #57534e;
+  font-size: 1rem;
 }
 
 .klikqris-billing-card > strong {
-  color: #28221F;
-  font-size: clamp(2rem, 8vw, 3rem);
-  line-height: 1.08;
-  letter-spacing: -.045em;
-}
-
-.klikqris-billing-row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  margin-top: 7px;
-  color: #777;
-  font-size: .78rem;
-}
-
-.klikqris-status {
-  padding: 5px 9px;
-  border-radius: 999px;
-  font-size: .72rem;
-  letter-spacing: .02em;
-}
-
-.klikqris-status.pending {
-  color: #8b5a18;
-  background: rgba(196, 151, 102, 0.14);
-}
-
-.klikqris-status.success {
-  color: #7B1824;
-  background: rgba(123, 24, 36, 0.10);
-}
-
-.klikqris-status.expired {
-  color: #64131D;
-  background: rgba(100, 19, 29, 0.09);
-}
-
-.klikqris-time-card {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12px;
-  align-items: center;
-  margin: 12px 18px 0;
-  padding: 15px 16px;
-  border-radius: 18px;
-  background: #28221F;
-  color: #fff;
-  box-shadow: 0 14px 30px rgba(40, 34, 31, 0.12);
-}
-
-.klikqris-time-copy span,
-.klikqris-time-meta span {
-  display: block;
-  color: rgba(255,255,255,.66);
-  font-size: .72rem;
-}
-
-.klikqris-time-copy strong {
-  display: block;
-  margin-top: 2px;
-  color: #fff;
-  font-size: clamp(1.55rem, 6vw, 2.15rem);
-  letter-spacing: .04em;
-  font-variant-numeric: tabular-nums;
-}
-
-.klikqris-time-meta {
-  text-align: right;
-}
-
-.klikqris-time-meta strong {
-  display: block;
-  margin-top: 2px;
-  color: #f3dfc9;
-  font-size: .82rem;
+  color: #1c1917;
+  font-size: clamp(2rem, 8vw, 2.7rem);
+  line-height: 1.15;
+  letter-spacing: -.03em;
 }
 
 .klikqris-actions {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 62px;
-  gap: 10px;
-  margin: 14px 18px 0;
+  gap: 12px;
+  margin: 22px 24px 0;
 }
 
 .klikqris-check-button {
-  min-height: 56px;
+  min-height: 58px;
   border-radius: 16px !important;
-  font-size: .96rem;
+  font-size: 1rem;
+  font-weight: 800;
+  background: #C6367A !important;
+  border-color: #C6367A !important;
+  color: #fff !important;
+}
+
+.klikqris-check-button:hover:not(:disabled) {
+  background: #B02D6B !important;
+  border-color: #B02D6B !important;
+}
+
+.klikqris-check-button:disabled {
+  opacity: .6;
 }
 
 .klikqris-download-button {
-  min-height: 56px;
+  min-height: 58px;
   display: grid;
   place-items: center;
   padding: 0;
-  border: 2px solid #7B1824;
+  border: 2px solid #C6367A;
   border-radius: 16px;
   background: #fff;
-  color: #7B1824;
+  color: #C6367A;
   transition: transform .18s ease, background .18s ease, color .18s ease;
 }
 
 .klikqris-download-button:hover:not(:disabled) {
   transform: translateY(-1px);
-  background: #7B1824;
+  background: #C6367A;
   color: #fff;
 }
 
@@ -4878,35 +4714,8 @@ body, .app-shell, .app-shell-menu {
   cursor: not-allowed;
 }
 
-.klikqris-auto-check {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  margin: 10px 18px 0;
-  color: #777;
-  font-size: .76rem;
-  text-align: center;
-}
-
-.klikqris-pulse-dot {
-  width: 7px;
-  height: 7px;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  background: #7B1824;
-  box-shadow: 0 0 0 0 rgba(123, 24, 36, .25);
-  animation: klikqris-pulse 1.7s infinite;
-}
-
-@keyframes klikqris-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(123, 24, 36, .25); }
-  70% { box-shadow: 0 0 0 7px rgba(123, 24, 36, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(123, 24, 36, 0); }
-}
-
 .klikqris-error {
-  margin: 14px 18px 0;
+  margin: 14px 24px 0;
 }
 
 .klikqris-empty-state {
@@ -4938,30 +4747,16 @@ body, .app-shell, .app-shell-menu {
 }
 
 .klikqris-how-to {
-  margin-top: 18px;
-  padding: 22px 18px 26px;
-  background: #fff;
-  border-top: 1px solid rgba(196, 151, 102, 0.18);
+  margin-top: 26px;
+  padding: 24px 24px 28px;
+  background: #ececef;
 }
 
-.klikqris-section-title {
-  margin-bottom: 18px;
-}
-
-.klikqris-section-kicker {
-  display: block;
-  margin-bottom: 3px;
-  color: #7B1824;
-  font-size: .72rem;
+.klikqris-how-title {
+  margin: 0 0 20px;
+  color: #1c1917;
+  font-size: 1.5rem;
   font-weight: 800;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-
-.klikqris-section-title h2 {
-  margin: 0;
-  color: #28221F;
-  font-size: 1.35rem;
 }
 
 .klikqris-how-tabs {
@@ -5128,54 +4923,26 @@ body, .app-shell, .app-shell-menu {
 }
 
 @media (max-width: 640px) {
-  .klikqris-payment-head {
-    padding: 22px 16px 18px;
-  }
-
-  .klikqris-invoice-strip,
   .klikqris-billing-card,
-  .klikqris-time-card,
   .klikqris-actions {
-    margin-left: 12px;
-    margin-right: 12px;
-  }
-
-  .klikqris-invoice-strip {
-    padding: 12px;
+    margin-left: 16px;
+    margin-right: 16px;
   }
 
   .klikqris-qr-stage {
-    padding-inline: 12px;
+    padding-inline: 16px;
   }
 
   .klikqris-qr-frame {
-    width: min(390px, calc(100vw - 46px));
-  }
-
-  .klikqris-time-card {
-    grid-template-columns: 1fr;
-  }
-
-  .klikqris-time-meta {
-    text-align: left;
+    width: min(360px, calc(100vw - 88px));
   }
 
   .klikqris-how-to {
-    padding-inline: 14px;
+    padding-inline: 16px;
   }
 
   .klikqris-how-tabs {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-
-  .klikqris-how-divider {
-    display: none;
-  }
-
-  .klikqris-how-tab {
-    padding: 11px;
-    border-radius: 16px;
-    background: #fbf7ef;
+    grid-template-columns: 1fr 1px 1fr;
+    gap: 10px;
   }
 }
