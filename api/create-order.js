@@ -2,6 +2,26 @@ import { createOrderRecord } from './_store.js'
 import { formatOrderTime, getMethodLabel, getOrderItemsCount, getStatusLabel } from './_shared.js'
 import { sendOrderToTelegram } from './_telegram.js'
 
+function parsePrice(value, fallback = 0) {
+  if (typeof value === 'number') return Number.isFinite(value) ? Math.round(value) : fallback
+  const raw = String(value ?? '').trim().replace(/^rp\.?\s*/i, '').replace(/\s+/g, '')
+  if (!raw) return fallback
+  let normalized = raw.replace(/[^0-9,.-]/g, '')
+  const commaIndex = normalized.lastIndexOf(',')
+  const dotIndex = normalized.lastIndexOf('.')
+  if (commaIndex >= 0 && dotIndex >= 0) {
+    normalized = commaIndex > dotIndex ? normalized.replace(/\./g, '').replace(',', '.') : normalized.replace(/,/g, '')
+  } else if (commaIndex >= 0) {
+    const digitsAfter = normalized.length - commaIndex - 1
+    normalized = digitsAfter === 3 ? normalized.replace(/,/g, '') : normalized.replace(',', '.')
+  } else if (dotIndex >= 0) {
+    const digitsAfter = normalized.length - dotIndex - 1
+    normalized = digitsAfter === 3 ? normalized.replace(/\./g, '') : normalized
+  }
+  const parsed = Number(normalized)
+  return Number.isFinite(parsed) ? Math.round(parsed) : fallback
+}
+
 function buildResponse(order) {
   return {
     ...order,
@@ -26,9 +46,9 @@ export default async function handler(req, res) {
     const items = rawItems.map((item) => {
       const qty = Math.max(0, Number(item?.qty ?? item?.quantity ?? 0) || 0)
       const hasBasePrice = item?.basePrice !== undefined && item?.basePrice !== null && item?.basePrice !== ''
-      const basePrice = Number(hasBasePrice ? item.basePrice : item.price) || 0
-      const variantPrice = Number(item?.variantPrice ?? 0) || 0
-      const unitPrice = hasBasePrice ? basePrice + variantPrice : (Number(item?.price) || 0)
+      const basePrice = parsePrice(hasBasePrice ? item.basePrice : item.price)
+      const variantPrice = parsePrice(item?.variantPrice)
+      const unitPrice = hasBasePrice ? basePrice + variantPrice : parsePrice(item?.price)
       return {
         ...item,
         qty,
