@@ -10,6 +10,7 @@ import {
   getBaseSubtotal,
   getSubtotal,
   getVariantSubtotal,
+  getItemUnitPrice,
 } from '../data/siteConfig'
 import { MENU_PLACEHOLDER_IMAGE } from '../data/menuItems'
 
@@ -127,7 +128,7 @@ export default function OrderPage() {
                         <div className="order-item-copy">
                           <strong>{item.name}</strong>
                           <span>{variantLabel || 'Tanpa varian'}</span>
-                          <small>{currency.format(item.price)}</small>
+                          <small>{currency.format(getItemUnitPrice(item))}</small>
                         </div>
                         <div className="order-item-actions">
                           <div className="qty-control order-qty">

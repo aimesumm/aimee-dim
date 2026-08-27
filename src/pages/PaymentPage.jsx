@@ -12,14 +12,36 @@ import { normalizeOrder, readLastOrder, writeLastOrder } from '../lib/orderHelpe
 
 const STATUS_CHECK_SECONDS = 10
 const SUCCESS_ANIMATION_MS = 1500
+const MANUAL_REFRESH_DELAY_MS = 800
+
+function getExpiryTimestamp(expiredAt) {
+  if (!expiredAt) return null
+  const normalized = String(expiredAt).trim().replace(' ', 'T')
+  const withOffset = /(?:Z|[+-]\d{2}:?\d{2})$/.test(normalized) ? normalized : `${normalized}+08:00`
+  const timestamp = new Date(withOffset).getTime()
+  return Number.isFinite(timestamp) ? timestamp : null
+}
+
+function getPaymentRemainingSeconds(qris) {
+  const timestamp = getExpiryTimestamp(qris?.expired_at)
+  if (timestamp !== null) return Math.max(0, Math.ceil((timestamp - Date.now()) / 1000))
+  const fallbackMinutes = Number(qris?.expired_menit)
+  if (Number.isFinite(fallbackMinutes) && fallbackMinutes > 0) return Math.round(fallbackMinutes * 60)
+  return 0
+}
+
+function getPaymentStatuses(order) {
+  return [order?.paymentStatus, order?.status, order?.qris?.status]
+    .map((value) => String(value || '').trim().toLowerCase())
+    .filter(Boolean)
+}
 
 function isPaidStatus(order) {
-  const status = String(order?.paymentStatus || order?.status || order?.qris?.status || '').toLowerCase()
-  return status === 'paid' || status === 'completed' || status === 'success'
+  return getPaymentStatuses(order).some((status) => status === 'paid' || status === 'completed' || status === 'success')
 }
 
 function isExpiredStatus(order) {
-  return String(order?.paymentStatus || order?.status || order?.qris?.status || '').toLowerCase() === 'expired'
+  return getPaymentStatuses(order).some((status) => status === 'expired')
 }
 
 export default function PaymentPage() {
@@ -44,6 +66,7 @@ export default function PaymentPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [nextCheckIn, setNextCheckIn] = useState(STATUS_CHECK_SECONDS)
+  const [paymentRemainingSeconds, setPaymentRemainingSeconds] = useState(0)
   const [showSuccessTransition, setShowSuccessTransition] = useState(false)
   const [selectedMethod, setSelectedMethod] = useState(() => String(routeMethod || location.state?.method || initialOrder?.paymentMethod || initialOrder?.method || preferredMethod || 'QRIS').toUpperCase())
 
@@ -83,6 +106,7 @@ export default function PaymentPage() {
     if (!order?.orderId || statusRequestRef.current || successNavigationRef.current) return
 
     statusRequestRef.current = true
+    let shouldRefresh = false
     if (manual) setChecking(true)
     setError('')
 
@@ -96,8 +120,12 @@ export default function PaymentPage() {
       setOrder(normalized)
       writeLastOrder(normalized)
       setNextCheckIn(STATUS_CHECK_SECONDS)
+      setPaymentRemainingSeconds(getPaymentRemainingSeconds(normalized.qris))
 
-      if (isPaidStatus(normalized)) {
+      if (manual) {
+        shouldRefresh = true
+        window.setTimeout(() => window.location.reload(), MANUAL_REFRESH_DELAY_MS)
+      } else if (isPaidStatus(normalized)) {
         goPaid(normalized)
       } else if (isExpiredStatus(normalized)) {
         goExpired(normalized)
@@ -106,7 +134,7 @@ export default function PaymentPage() {
       if (manual) setError(err.message || 'Gagal mengecek pembayaran.')
     } finally {
       statusRequestRef.current = false
-      if (manual) setChecking(false)
+      if (manual && !shouldRefresh) setChecking(false)
     }
   }
 
@@ -115,6 +143,15 @@ export default function PaymentPage() {
       navigate('/order', { replace: true })
     }
   }, [draftMode, cart.length, navigate])
+
+  useEffect(() => {
+    if (!order?.orderId || draftMode || successNavigationRef.current) return
+    if (isPaidStatus(order)) {
+      goPaid(order)
+    } else if (isExpiredStatus(order)) {
+      goExpired(order)
+    }
+  }, [order?.orderId, order?.paymentStatus, order?.status, draftMode])
 
   useEffect(() => {
     if (!orderId || order) return
@@ -157,12 +194,15 @@ export default function PaymentPage() {
     if (!order?.orderId || !isQris || showSuccessTransition) return
     if (isPaidStatus(order) || isExpiredStatus(order)) return
 
+    setPaymentRemainingSeconds(getPaymentRemainingSeconds(order.qris))
+
     const timer = window.setInterval(() => {
       setNextCheckIn((current) => Math.max(0, current - 1))
+      setPaymentRemainingSeconds((current) => Math.max(0, current - 1))
     }, 1000)
 
     return () => window.clearInterval(timer)
-  }, [order?.orderId, isQris, showSuccessTransition])
+  }, [order?.orderId, isQris, order?.qris?.expired_at, order?.qris?.expired_menit, showSuccessTransition])
 
   useEffect(() => {
     if (nextCheckIn !== 0 || !order?.orderId || !isQris || showSuccessTransition) return
@@ -249,19 +289,27 @@ export default function PaymentPage() {
     setPreferredMethod(selectedMethod)
 
     try {
-      const items = cart.map((item) => ({
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        basePrice: item.basePrice ?? item.price,
-        variantPrice: item.variantPrice ?? 0,
-        qty: item.qty,
-        category: item.category,
-        variant: item.variant,
-        variantLabel: item.variantLabel,
-      }))
+      const items = cart.map((item) => {
+        const basePrice = Number(item.basePrice ?? item.price ?? 0) || 0
+        const variantPrice = Number(item.variantPrice ?? 0) || 0
+        const price = item.basePrice !== undefined && item.basePrice !== null
+          ? basePrice + variantPrice
+          : Number(item.price || 0)
 
-      const subtotal = items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0), 0)
+        return {
+          id: item.id,
+          name: item.name,
+          price,
+          basePrice,
+          variantPrice,
+          qty: item.qty,
+          category: item.category,
+          variant: item.variant,
+          variantLabel: item.variantLabel,
+        }
+      })
+
+      const subtotal = items.reduce((sum, item) => sum + (Number(item.basePrice || 0) + Number(item.variantPrice || 0)) * Number(item.qty || 0), 0)
       const created = await createOrder({
         customerName: customer.name.trim(),
         customerPhone: customer.phone.trim(),
@@ -373,8 +421,8 @@ export default function PaymentPage() {
             checking={checking}
             generating={generating}
             qrisError={error}
+            remainingSeconds={paymentRemainingSeconds}
             onCheck={() => requestPaymentStatus({ manual: true })}
-            nextCheckIn={nextCheckIn}
           />
         </main>
         <AnimatePresence>
