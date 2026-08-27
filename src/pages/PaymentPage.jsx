@@ -5,28 +5,41 @@ import CustomerDetailsCard from '../components/CustomerDetailsCard'
 import PaymentMethodPicker from '../components/PaymentMethodPicker'
 import KlikQrisPaymentCard from '../components/KlikQrisPaymentCard'
 import PaymentSuccessTransition from '../components/PaymentSuccessTransition'
+import LoadingScreen from '../components/LoadingScreen'
 import { checkPayment, createOrder, createQris } from '../services/paymentGateway'
 import { useCart } from '../context/CartContext'
 import { useOrderDraft } from '../context/OrderDraftContext'
 import { normalizeOrder, readLastOrder, writeLastOrder } from '../lib/orderHelpers'
+import { parsePrice } from '../data/siteConfig'
 
 const STATUS_CHECK_SECONDS = 10
 const SUCCESS_ANIMATION_MS = 1500
-const MANUAL_REFRESH_DELAY_MS = 800
+const MANUAL_REFRESH_DELAY_MS = 1100
 
 function getExpiryTimestamp(expiredAt) {
   if (!expiredAt) return null
-  const normalized = String(expiredAt).trim().replace(' ', 'T')
+
+  const raw = String(expiredAt).trim()
+  const normalized = raw.includes('T') ? raw : raw.replace(' ', 'T')
   const withOffset = /(?:Z|[+-]\d{2}:?\d{2})$/.test(normalized) ? normalized : `${normalized}+08:00`
-  const timestamp = new Date(withOffset).getTime()
+  const timestamp = Date.parse(withOffset)
   return Number.isFinite(timestamp) ? timestamp : null
 }
 
 function getPaymentRemainingSeconds(qris) {
-  const timestamp = getExpiryTimestamp(qris?.expired_at)
-  if (timestamp !== null) return Math.max(0, Math.ceil((timestamp - Date.now()) / 1000))
+  const directExpiry = getExpiryTimestamp(qris?.expired_at)
+  if (directExpiry !== null) return Math.max(0, Math.ceil((directExpiry - Date.now()) / 1000))
+
   const fallbackMinutes = Number(qris?.expired_menit)
-  if (Number.isFinite(fallbackMinutes) && fallbackMinutes > 0) return Math.round(fallbackMinutes * 60)
+  if (Number.isFinite(fallbackMinutes) && fallbackMinutes > 0) {
+    const createdAt = getExpiryTimestamp(qris?.created_at)
+    if (createdAt !== null) {
+      const calculatedExpiry = createdAt + fallbackMinutes * 60_000
+      return Math.max(0, Math.ceil((calculatedExpiry - Date.now()) / 1000))
+    }
+    return Math.round(fallbackMinutes * 60)
+  }
+
   return 0
 }
 
@@ -122,7 +135,10 @@ export default function PaymentPage() {
       setNextCheckIn(STATUS_CHECK_SECONDS)
       setPaymentRemainingSeconds(getPaymentRemainingSeconds(normalized.qris))
 
-      if (manual) {
+      if (manual && (isPaidStatus(normalized) || isExpiredStatus(normalized))) {
+        // Manual checking uses the full-page LoadingScreen. Once the gateway
+        // reports a terminal state, reload the payment route so the normal
+        // paid/expired routing logic runs from the fresh order state.
         shouldRefresh = true
         window.setTimeout(() => window.location.reload(), MANUAL_REFRESH_DELAY_MS)
       } else if (isPaidStatus(normalized)) {
@@ -198,7 +214,9 @@ export default function PaymentPage() {
 
     const timer = window.setInterval(() => {
       setNextCheckIn((current) => Math.max(0, current - 1))
-      setPaymentRemainingSeconds((current) => Math.max(0, current - 1))
+      // Recalculate from expired_at every second instead of decrementing a
+      // local counter, so the display stays synchronized with the real expiry.
+      setPaymentRemainingSeconds(getPaymentRemainingSeconds(order.qris))
     }, 1000)
 
     return () => window.clearInterval(timer)
@@ -216,10 +234,8 @@ export default function PaymentPage() {
     const expiredAt = qris?.expired_at
     if (!expiredAt) return
 
-    const normalized = String(expiredAt).replace(' ', 'T')
-    const withWitaOffset = /(?:Z|[+-]\d{2}:?\d{2})$/.test(normalized) ? normalized : `${normalized}+08:00`
-    const expiresAt = new Date(withWitaOffset).getTime()
-    if (!Number.isFinite(expiresAt)) return
+    const expiresAt = getExpiryTimestamp(expiredAt)
+    if (expiresAt === null) return
 
     const timer = window.setInterval(() => {
       if (Date.now() >= expiresAt && !expirationCheckRef.current) {
@@ -249,6 +265,7 @@ export default function PaymentPage() {
         const response = await createQris({
           orderId: order.orderId,
           amount: Number(order.total || 0),
+          expired_menit: '60',
           keterangan: `Pembayaran Order ${order.orderId}`,
         })
 
@@ -290,11 +307,11 @@ export default function PaymentPage() {
 
     try {
       const items = cart.map((item) => {
-        const basePrice = Number(item.basePrice ?? item.price ?? 0) || 0
-        const variantPrice = Number(item.variantPrice ?? 0) || 0
+        const basePrice = parsePrice(item.basePrice ?? item.price)
+        const variantPrice = parsePrice(item.variantPrice)
         const price = item.basePrice !== undefined && item.basePrice !== null
           ? basePrice + variantPrice
-          : Number(item.price || 0)
+          : parsePrice(item.price)
 
         return {
           id: item.id,
@@ -331,6 +348,7 @@ export default function PaymentPage() {
         const qrisResponse = await createQris({
           orderId: created.orderId,
           amount: Number(created.total || subtotal || 0),
+          expired_menit: '60',
           keterangan: `Pembayaran Order ${created.orderId}`,
         })
 
@@ -409,6 +427,10 @@ export default function PaymentPage() {
         </main>
       </div>
     )
+  }
+
+  if (checking) {
+    return <LoadingScreen label="Memeriksa pembayaran..." />
   }
 
   if (isQris) {
