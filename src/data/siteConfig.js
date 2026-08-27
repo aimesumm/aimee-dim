@@ -23,6 +23,35 @@ export const currency = new Intl.NumberFormat('id-ID', {
   maximumFractionDigits: 0,
 })
 
+export function parsePrice(value, fallback = 0) {
+  if (typeof value === 'number') return Number.isFinite(value) ? Math.round(value) : fallback
+
+  const raw = String(value ?? '').trim().replace(/^rp\.?\s*/i, '').replace(/\s+/g, '')
+  if (!raw) return fallback
+
+  const cleaned = raw.replace(/[^0-9,.-]/g, '')
+  if (!cleaned) return fallback
+
+  let normalized = cleaned
+  const commaIndex = normalized.lastIndexOf(',')
+  const dotIndex = normalized.lastIndexOf('.')
+
+  if (commaIndex >= 0 && dotIndex >= 0) {
+    // Indonesian-style 12.500,50 versus international 12,500.50.
+    if (commaIndex > dotIndex) normalized = normalized.replace(/\./g, '').replace(',', '.')
+    else normalized = normalized.replace(/,/g, '')
+  } else if (commaIndex >= 0) {
+    const digitsAfter = normalized.length - commaIndex - 1
+    normalized = digitsAfter === 3 ? normalized.replace(/,/g, '') : normalized.replace(',', '.')
+  } else if (dotIndex >= 0) {
+    const digitsAfter = normalized.length - dotIndex - 1
+    normalized = digitsAfter === 3 ? normalized.replace(/\./g, '') : normalized
+  }
+
+  const parsed = Number(normalized)
+  return Number.isFinite(parsed) ? Math.round(parsed) : fallback
+}
+
 export const PAYMENT_STATUS = {
   PENDING: 'pending',
   PAID: 'paid',
@@ -116,9 +145,9 @@ export function getOrderItemsCount(items = []) {
 
 export function getItemUnitPrice(item = {}) {
   const hasBasePrice = item?.basePrice !== undefined && item?.basePrice !== null && item?.basePrice !== ''
-  const basePrice = Number(hasBasePrice ? item.basePrice : item.price) || 0
-  const variantPrice = Number(item.variantPrice ?? 0) || 0
-  return Math.max(0, hasBasePrice ? basePrice + variantPrice : (Number(item.price) || 0))
+  const basePrice = parsePrice(hasBasePrice ? item.basePrice : item.price)
+  const variantPrice = parsePrice(item.variantPrice)
+  return Math.max(0, hasBasePrice ? basePrice + variantPrice : parsePrice(item.price))
 }
 
 export function getSubtotal(items = []) {
@@ -128,13 +157,13 @@ export function getSubtotal(items = []) {
 export function getBaseSubtotal(items = []) {
   return items.reduce((sum, item) => {
     const hasBasePrice = item?.basePrice !== undefined && item?.basePrice !== null && item?.basePrice !== ''
-    const basePrice = Number(hasBasePrice ? item.basePrice : item.price) || 0
+    const basePrice = parsePrice(hasBasePrice ? item.basePrice : item.price)
     return sum + basePrice * Number(item.qty ?? item.quantity ?? 0)
   }, 0)
 }
 
 export function getVariantSubtotal(items = []) {
-  return items.reduce((sum, item) => sum + (Number(item.variantPrice ?? 0) || 0) * Number(item.qty ?? item.quantity ?? 0), 0)
+  return items.reduce((sum, item) => sum + parsePrice(item.variantPrice) * Number(item.qty ?? item.quantity ?? 0), 0)
 }
 
 export function formatItemVariant(item = {}) {
