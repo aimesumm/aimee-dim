@@ -41,6 +41,13 @@ function getQrisSource(qris) {
   return String(qris?.qris_image || qris?.qris_url || '').trim()
 }
 
+function formatCountdown(totalSeconds) {
+  const seconds = Math.max(0, Number(totalSeconds) || 0)
+  const minutes = Math.floor(seconds / 60)
+  const remainder = seconds % 60
+  return `${String(minutes).padStart(2, '0')}:${String(remainder).padStart(2, '0')}`
+}
+
 async function downloadSource(source, fileName) {
   if (!source) return
 
@@ -129,6 +136,7 @@ export default function KlikQrisPaymentCard({
   checking,
   generating,
   qrisError,
+  remainingSeconds = 0,
   onCheck,
 }) {
   const source = getQrisSource(qris)
@@ -137,7 +145,7 @@ export default function KlikQrisPaymentCard({
 
   const status = String(qris?.status || order?.paymentStatus || 'PENDING').toUpperCase()
   const isExpired = status === 'EXPIRED'
-  const fileName = `QRIS-AIME-Dimsum-${order?.orderId || 'payment'}.png`
+  const fileName = `QRIS-AimeYummy-${order?.orderId || 'payment'}.png`
 
   const handleDownload = async () => {
     if (!source || downloadBusy) return
@@ -161,6 +169,18 @@ export default function KlikQrisPaymentCard({
       ) : (
         <>
           <div className="klikqris-qr-stage">
+            <div className="klikqris-countdown" aria-live="polite">
+              <span>Complete payment in</span>
+              <strong>{formatCountdown(remainingSeconds)}</strong>
+            </div>
+            <div className="klikqris-branding">
+              <div className="klikqris-logo-line">
+                <strong className="klikqris-logo-word">QRIS</strong>
+                <span>QR Code Standar<br />Pembayaran Nasional</span>
+              </div>
+              <span className="klikqris-gpn">GPN</span>
+              <strong className="klikqris-merchant-name">AimeYummy</strong>
+            </div>
             <span className="klikqris-qr-ribbon klikqris-qr-ribbon-top" aria-hidden="true" />
             <div className="klikqris-qr-frame">
               <img src={source} alt={`QRIS pembayaran order ${order?.orderId || ''}`} />
@@ -180,7 +200,7 @@ export default function KlikQrisPaymentCard({
               onClick={onCheck}
               disabled={checking || generating || isExpired}
             >
-              {checking ? 'Checking payment...' : 'Check Payment Status'}
+              {checking ? 'Memeriksa pembayaran...' : 'Check Status'}
             </button>
             <button
               className="klikqris-download-button"
@@ -193,6 +213,14 @@ export default function KlikQrisPaymentCard({
               <DownloadIcon />
             </button>
           </div>
+
+          {checking ? (
+            <div className="klikqris-status-loading" role="status" aria-live="polite">
+              <div className="loading-spinner" />
+              <strong>Memeriksa status pembayaran...</strong>
+              <span>Mohon tunggu, halaman akan diperbarui otomatis.</span>
+            </div>
+          ) : null}
 
           {qrisError ? <div className="notice error klikqris-error">{qrisError}</div> : null}
         </>
