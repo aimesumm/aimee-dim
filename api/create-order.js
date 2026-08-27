@@ -22,10 +22,26 @@ export default async function handler(req, res) {
   try {
     const body = req.body || {}
     const paymentMethod = String(body.paymentMethod || body.method || 'QRIS').toUpperCase() === 'CASH' ? 'CASH' : 'QRIS'
-    const items = Array.isArray(body.items) ? body.items : []
+    const rawItems = Array.isArray(body.items) ? body.items : []
+    const items = rawItems.map((item) => {
+      const qty = Math.max(0, Number(item?.qty ?? item?.quantity ?? 0) || 0)
+      const hasBasePrice = item?.basePrice !== undefined && item?.basePrice !== null && item?.basePrice !== ''
+      const basePrice = Number(hasBasePrice ? item.basePrice : item.price) || 0
+      const variantPrice = Number(item?.variantPrice ?? 0) || 0
+      const unitPrice = hasBasePrice ? basePrice + variantPrice : (Number(item?.price) || 0)
+      return {
+        ...item,
+        qty,
+        quantity: qty,
+        basePrice,
+        variantPrice,
+        price: unitPrice,
+        lineTotal: unitPrice * qty,
+      }
+    })
     const itemCount = getOrderItemsCount(items)
     const subtotal = items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || item.quantity || 0), 0)
-    const total = Number(body.total || subtotal)
+    const total = subtotal
 
     const created = await createOrderRecord({
       customerName: body.customerName || body.name || 'Pelanggan',

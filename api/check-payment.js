@@ -85,8 +85,14 @@ export default async function handler(req, res) {
     const qris = {
       ...localQris,
       ...remote,
+      order_id: remote.order_id ?? localQris.order_id ?? order.orderId,
       status: String(remote.status || localQris.status || 'PENDING').toUpperCase(),
       total_amount: Number(remote.total_amount ?? localQris.total_amount ?? order.total ?? 0),
+      qris_url: remote.qris_url ?? localQris.qris_url ?? null,
+      qris_image: remote.qris_image ?? localQris.qris_image ?? null,
+      signature: remote.signature ?? localQris.signature ?? null,
+      expired_at: remote.expired_at ?? localQris.expired_at ?? null,
+      paid_at: remote.paid_at ?? remote.payment_date ?? localQris.paid_at ?? null,
     }
 
     const paymentStatus = statusToPaymentStatus(remote.status)
