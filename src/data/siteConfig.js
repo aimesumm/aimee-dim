@@ -114,16 +114,27 @@ export function getOrderItemsCount(items = []) {
   return items.reduce((sum, item) => sum + Number(item.qty ?? item.quantity ?? 0), 0)
 }
 
+export function getItemUnitPrice(item = {}) {
+  const hasBasePrice = item?.basePrice !== undefined && item?.basePrice !== null && item?.basePrice !== ''
+  const basePrice = Number(hasBasePrice ? item.basePrice : item.price) || 0
+  const variantPrice = Number(item.variantPrice ?? 0) || 0
+  return Math.max(0, hasBasePrice ? basePrice + variantPrice : (Number(item.price) || 0))
+}
+
 export function getSubtotal(items = []) {
-  return items.reduce((sum, item) => sum + Number(item.price ?? 0) * Number(item.qty ?? item.quantity ?? 0), 0)
+  return items.reduce((sum, item) => sum + getItemUnitPrice(item) * Number(item.qty ?? item.quantity ?? 0), 0)
 }
 
 export function getBaseSubtotal(items = []) {
-  return items.reduce((sum, item) => sum + Number(item.basePrice ?? item.price ?? 0) * Number(item.qty ?? item.quantity ?? 0), 0)
+  return items.reduce((sum, item) => {
+    const hasBasePrice = item?.basePrice !== undefined && item?.basePrice !== null && item?.basePrice !== ''
+    const basePrice = Number(hasBasePrice ? item.basePrice : item.price) || 0
+    return sum + basePrice * Number(item.qty ?? item.quantity ?? 0)
+  }, 0)
 }
 
 export function getVariantSubtotal(items = []) {
-  return items.reduce((sum, item) => sum + Number(item.variantPrice ?? 0) * Number(item.qty ?? item.quantity ?? 0), 0)
+  return items.reduce((sum, item) => sum + (Number(item.variantPrice ?? 0) || 0) * Number(item.qty ?? item.quantity ?? 0), 0)
 }
 
 export function formatItemVariant(item = {}) {
