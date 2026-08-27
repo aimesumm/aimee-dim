@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { currency } from '../data/siteConfig'
 
-function PhoneIcon({ muted = false }) {
+function PhoneIcon() {
   return (
-    <span className={`klikqris-how-icon${muted ? ' muted' : ''}`} aria-hidden="true">
+    <span className="klikqris-how-icon" aria-hidden="true">
       <svg viewBox="0 0 24 24" focusable="false">
         <rect x="7" y="2.8" width="10" height="18.4" rx="2.2" />
         <path d="M10.5 5.5h3" />
@@ -41,44 +41,6 @@ function getQrisSource(qris) {
   return String(qris?.qris_image || qris?.qris_url || '').trim()
 }
 
-function parseKlikQrisDate(value) {
-  if (!value) return 0
-  const raw = String(value).trim()
-  if (!raw) return 0
-
-  const normalized = raw.includes('T') ? raw : raw.replace(' ', 'T')
-  // KlikQRIS timestamps are returned without an offset. AIME-Dimsum operates in WITA.
-  const withWitaOffset = /(?:Z|[+-]\d{2}:?\d{2})$/.test(normalized) ? normalized : `${normalized}+08:00`
-  const parsed = new Date(withWitaOffset).getTime()
-  return Number.isFinite(parsed) ? parsed : 0
-}
-
-function formatCountdown(ms) {
-  const totalSeconds = Math.max(0, Math.floor(ms / 1000))
-  const hours = Math.floor(totalSeconds / 3600)
-  const minutes = Math.floor((totalSeconds % 3600) / 60)
-  const seconds = totalSeconds % 60
-
-  if (hours > 0) {
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-  }
-
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-}
-
-function formatExpiry(value) {
-  const timestamp = parseKlikQrisDate(value)
-  if (!timestamp) return '-'
-
-  return new Intl.DateTimeFormat('id-ID', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'Asia/Makassar',
-  }).format(timestamp)
-}
-
 async function downloadSource(source, fileName) {
   if (!source) return
 
@@ -113,44 +75,39 @@ async function downloadSource(source, fileName) {
 function HowToPay() {
   return (
     <section className="klikqris-how-to" aria-labelledby="how-to-pay-title">
-      <div className="klikqris-section-title">
-        <span className="klikqris-section-kicker">Panduan Pembayaran</span>
-        <h2 id="how-to-pay-title">How to Pay</h2>
-      </div>
+      <h2 id="how-to-pay-title" className="klikqris-how-title">How to Pay:</h2>
 
       <div className="klikqris-how-tabs">
         <div className="klikqris-how-tab active">
           <PhoneIcon />
           <div>
-            <strong>Bayar dengan HP yang sama</strong>
-            <span>Screenshot QRIS lalu buka aplikasi pembayaran.</span>
+            <strong>Pay with the same phone</strong>
           </div>
         </div>
         <div className="klikqris-how-divider" aria-hidden="true" />
         <div className="klikqris-how-tab muted">
           <WalletIcon />
           <div>
-            <strong>Bayar dengan HP lain</strong>
-            <span>Scan QRIS dari layar HP yang menampilkan kode.</span>
+            <strong>Pay with other phone</strong>
           </div>
         </div>
       </div>
 
       <div className="klikqris-how-step">
         <span>1</span>
-        <p><strong>Screenshot</strong> QRIS yang tampil di halaman ini.</p>
+        <p><strong>Screenshot</strong> the QRIS code</p>
       </div>
       <div className="klikqris-how-step">
         <span>2</span>
-        <p><strong>Buka mobile banking atau e-wallet</strong> yang mendukung QRIS.</p>
+        <p><strong>Open QR payment</strong> in your m-banking or e-wallet</p>
       </div>
       <div className="klikqris-how-step">
         <span>3</span>
-        <p>Pilih menu <strong>QRIS/Scan</strong>, lalu scan QRIS dan pastikan jumlah tagihan sesuai.</p>
+        <p>Choose the <strong>QRIS/Scan</strong> menu, scan the code, and check the amount.</p>
       </div>
       <div className="klikqris-how-step">
         <span>4</span>
-        <p>Selesaikan pembayaran. <strong>Tidak perlu konfirmasi manual</strong>; status akan diperiksa otomatis.</p>
+        <p>Finish the payment. <strong>No manual confirmation needed</strong> — the status is checked automatically.</p>
       </div>
     </section>
   )
@@ -173,22 +130,13 @@ export default function KlikQrisPaymentCard({
   generating,
   qrisError,
   onCheck,
-  nextCheckIn,
 }) {
   const source = getQrisSource(qris)
   const amount = Number(qris?.total_amount ?? order?.total ?? 0)
-  const expiresAt = useMemo(() => parseKlikQrisDate(qris?.expired_at), [qris?.expired_at])
-  const [now, setNow] = useState(Date.now())
   const [downloadBusy, setDownloadBusy] = useState(false)
 
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 1000)
-    return () => window.clearInterval(timer)
-  }, [])
-
-  const remainingMs = expiresAt ? Math.max(0, expiresAt - now) : 0
   const status = String(qris?.status || order?.paymentStatus || 'PENDING').toUpperCase()
-  const isExpired = status === 'EXPIRED' || (expiresAt > 0 && remainingMs <= 0)
+  const isExpired = status === 'EXPIRED'
   const fileName = `QRIS-AIME-Dimsum-${order?.orderId || 'payment'}.png`
 
   const handleDownload = async () => {
@@ -208,63 +156,31 @@ export default function KlikQrisPaymentCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <header className="klikqris-payment-head">
-        <div className="klikqris-brand-badge">AIME-Dimsum • QRIS</div>
-        <h1>Bayar lebih cepat, pesanan langsung diproses.</h1>
-        <p>Scan QRIS di bawah dengan mobile banking atau e-wallet. Setelah pembayaran berhasil, sistem akan memverifikasi otomatis tanpa konfirmasi manual.</p>
-      </header>
-
-      <div className="klikqris-invoice-strip">
-        <div>
-          <span>Order ID</span>
-          <strong>{order?.orderId || '-'}</strong>
-        </div>
-        <div>
-          <span>Metode Pembayaran</span>
-          <strong>QRIS</strong>
-        </div>
-      </div>
-
       {!source ? (
         <QrisLoading generating={generating} error={qrisError} />
       ) : (
         <>
           <div className="klikqris-qr-stage">
-            <div className="klikqris-scan-label">SCAN QRIS UNTUK MEMBAYAR</div>
+            <span className="klikqris-qr-ribbon klikqris-qr-ribbon-top" aria-hidden="true" />
             <div className="klikqris-qr-frame">
               <img src={source} alt={`QRIS pembayaran order ${order?.orderId || ''}`} />
             </div>
-            <p className="klikqris-qr-helper">Screenshot QRIS atau langsung scan menggunakan perangkat lain.</p>
+            <span className="klikqris-qr-ribbon klikqris-qr-ribbon-bottom" aria-hidden="true" />
           </div>
 
           <div className="klikqris-billing-card">
-            <span>Jumlah Tagihan</span>
+            <span>Payment Total</span>
             <strong>{currency.format(amount)}</strong>
-            <div className="klikqris-billing-row">
-              <span>Status</span>
-              <b className={`klikqris-status ${status.toLowerCase()}`}>{status === 'PENDING' ? 'Menunggu Pembayaran' : status === 'SUCCESS' ? 'Pembayaran Berhasil' : 'QRIS Kedaluwarsa'}</b>
-            </div>
-          </div>
-
-          <div className="klikqris-time-card">
-            <div className="klikqris-time-copy">
-              <span>Waktu pembayaran</span>
-              <strong>{isExpired ? '00:00' : formatCountdown(remainingMs)}</strong>
-            </div>
-            <div className="klikqris-time-meta">
-              <span>Berakhir</span>
-              <strong>{formatExpiry(qris?.expired_at)}</strong>
-            </div>
           </div>
 
           <div className="klikqris-actions">
             <button
-              className="primary-btn klikqris-check-button"
+              className="klikqris-check-button"
               type="button"
               onClick={onCheck}
               disabled={checking || generating || isExpired}
             >
-              {checking ? 'Mengecek pembayaran...' : 'Check Payment Status'}
+              {checking ? 'Checking payment...' : 'Check Payment Status'}
             </button>
             <button
               className="klikqris-download-button"
@@ -278,18 +194,9 @@ export default function KlikQrisPaymentCard({
             </button>
           </div>
 
-          <div className="klikqris-auto-check">
-            <span className="klikqris-pulse-dot" aria-hidden="true" />
-            <span>
-              {isExpired
-                ? 'Waktu pembayaran habis. Sistem akan memeriksa status terakhir transaksi.'
-                : `Pengecekan otomatis berikutnya dalam ${Math.max(0, Number(nextCheckIn || 0))} detik.`}
-            </span>
-          </div>
+          {qrisError ? <div className="notice error klikqris-error">{qrisError}</div> : null}
         </>
       )}
-
-      {qrisError ? <div className="notice error klikqris-error">{qrisError}</div> : null}
 
       <HowToPay />
     </motion.section>
