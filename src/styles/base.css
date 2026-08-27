@@ -4644,7 +4644,7 @@ body, .app-shell, .app-shell-menu {
 .klikqris-qris-logo {
   grid-area: qris;
   display: block;
-  width: min(305px, 100%);
+  width: min(250px, 100%);
   height: auto;
   object-fit: contain;
   justify-self: center;
@@ -4663,8 +4663,8 @@ body, .app-shell, .app-shell-menu {
 .klikqris-gpn-logo {
   grid-area: gpn;
   display: block;
-  width: clamp(52px, 13vw, 72px);
-  max-height: 96px;
+  width: clamp(48px, 11vw, 64px);
+  max-height: 86px;
   height: auto;
   object-fit: contain;
 }
@@ -4764,28 +4764,6 @@ body, .app-shell, .app-shell-menu {
   opacity: .82;
 }
 
-.klikqris-checking-content {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-.klikqris-button-spinner {
-  width: 19px;
-  height: 19px;
-  display: inline-block;
-  flex: 0 0 auto;
-  border: 2.5px solid rgba(255,255,255,.45);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: klikqris-button-spin .7s linear infinite;
-}
-
-@keyframes klikqris-button-spin {
-  to { transform: rotate(360deg); }
-}
-
 .klikqris-download-button {
   min-height: 58px;
   display: grid;
@@ -4821,32 +4799,6 @@ body, .app-shell, .app-shell-menu {
 
 .klikqris-error {
   margin: 14px 24px 0;
-}
-
-.klikqris-status-loading {
-  display: grid;
-  justify-items: center;
-  gap: 7px;
-  margin: 14px 24px 0;
-  padding: 18px;
-  border-radius: 18px;
-  background: #f2f2f4;
-  text-align: center;
-}
-
-.klikqris-status-loading .loading-spinner {
-  width: 34px;
-  height: 34px;
-  border-width: 4px;
-}
-
-.klikqris-status-loading strong {
-  color: #28221F;
-}
-
-.klikqris-status-loading span {
-  color: #777;
-  font-size: .84rem;
 }
 
 .klikqris-empty-state {
@@ -5006,7 +4958,7 @@ body, .app-shell, .app-shell-menu {
   }
 
   .klikqris-qris-logo {
-    width: min(275px, 100%);
+    width: min(250px, 100%);
   }
 
   .klikqris-logo-line > span {
@@ -5014,8 +4966,8 @@ body, .app-shell, .app-shell-menu {
   }
 
   .klikqris-gpn-logo {
-    width: 54px;
-    max-height: 80px;
+    width: 48px;
+    max-height: 72px;
   }
 
   .klikqris-qr-frame {
