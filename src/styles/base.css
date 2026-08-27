@@ -4587,9 +4587,86 @@ body, .app-shell, .app-shell-menu {
   position: relative;
   display: grid;
   justify-items: center;
-  padding: 34px 24px 26px;
+  padding: 22px 24px 28px;
   overflow: hidden;
-  background: #f1f1f3;
+  background: #e8e8ea;
+}
+
+.klikqris-countdown {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.klikqris-countdown span {
+  color: #242124;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.klikqris-countdown strong {
+  color: #111;
+  font-size: clamp(2.5rem, 10vw, 3.4rem);
+  line-height: 1;
+  letter-spacing: -.04em;
+}
+
+.klikqris-branding {
+  position: relative;
+  z-index: 2;
+  width: min(520px, 100%);
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.klikqris-logo-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #171517;
+}
+
+.klikqris-logo-word {
+  font-size: clamp(2.45rem, 11vw, 4rem);
+  line-height: .85;
+  font-weight: 1000;
+  letter-spacing: -.08em;
+  text-decoration: underline;
+  text-decoration-thickness: 5px;
+  text-underline-offset: 5px;
+}
+
+.klikqris-logo-line span {
+  font-size: clamp(.82rem, 3vw, 1.05rem);
+  font-weight: 900;
+  line-height: 1.18;
+  text-align: left;
+}
+
+.klikqris-gpn {
+  position: absolute;
+  top: 4px;
+  right: 0;
+  color: #18395d;
+  font-size: .84rem;
+  font-weight: 1000;
+  letter-spacing: .08em;
+}
+
+.klikqris-merchant-name {
+  max-width: 100%;
+  color: #242124;
+  font-size: clamp(1.45rem, 5vw, 2rem);
+  line-height: 1.2;
+  font-weight: 900;
 }
 
 /* Red ribbon bundle above the QR code, tucked behind its top-left corner */
@@ -4619,7 +4696,7 @@ body, .app-shell, .app-shell-menu {
 .klikqris-qr-frame {
   position: relative;
   z-index: 1;
-  width: min(400px, calc(100vw - 88px));
+  width: min(390px, calc(100vw - 72px));
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -4718,6 +4795,32 @@ body, .app-shell, .app-shell-menu {
   margin: 14px 24px 0;
 }
 
+.klikqris-status-loading {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  margin: 14px 24px 0;
+  padding: 18px;
+  border-radius: 18px;
+  background: #f2f2f4;
+  text-align: center;
+}
+
+.klikqris-status-loading .loading-spinner {
+  width: 34px;
+  height: 34px;
+  border-width: 4px;
+}
+
+.klikqris-status-loading strong {
+  color: #28221F;
+}
+
+.klikqris-status-loading span {
+  color: #777;
+  font-size: .84rem;
+}
+
 .klikqris-empty-state {
   display: grid;
   justify-items: center;
@@ -4747,7 +4850,7 @@ body, .app-shell, .app-shell-menu {
 }
 
 .klikqris-how-to {
-  margin-top: 26px;
+  margin-top: 18px;
   padding: 24px 24px 28px;
   background: #ececef;
 }
@@ -4933,8 +5036,25 @@ body, .app-shell, .app-shell-menu {
     padding-inline: 16px;
   }
 
+  .klikqris-logo-line {
+    gap: 8px;
+  }
+
+  .klikqris-logo-word {
+    font-size: 2.35rem;
+  }
+
+  .klikqris-logo-line span {
+    font-size: .74rem;
+  }
+
+  .klikqris-gpn {
+    position: static;
+    margin-top: 0;
+  }
+
   .klikqris-qr-frame {
-    width: min(360px, calc(100vw - 88px));
+    width: min(360px, calc(100vw - 72px));
   }
 
   .klikqris-how-to {
