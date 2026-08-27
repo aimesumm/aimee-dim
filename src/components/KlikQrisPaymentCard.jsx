@@ -48,6 +48,10 @@ function formatCountdown(totalSeconds) {
   return `${String(minutes).padStart(2, '0')}:${String(remainder).padStart(2, '0')}`
 }
 
+function CheckSpinner() {
+  return <span className="klikqris-button-spinner" aria-hidden="true" />
+}
+
 async function downloadSource(source, fileName) {
   if (!source) return
 
@@ -168,17 +172,18 @@ export default function KlikQrisPaymentCard({
         <QrisLoading generating={generating} error={qrisError} />
       ) : (
         <>
+          <div className="klikqris-countdown-strip" aria-live="polite">
+            <span>Complete payment in</span>
+            <strong>{formatCountdown(remainingSeconds)}</strong>
+          </div>
+
           <div className="klikqris-qr-stage">
-            <div className="klikqris-countdown" aria-live="polite">
-              <span>Complete payment in</span>
-              <strong>{formatCountdown(remainingSeconds)}</strong>
-            </div>
             <div className="klikqris-branding">
               <div className="klikqris-logo-line">
-                <strong className="klikqris-logo-word">QRIS</strong>
+                <img className="klikqris-qris-logo" src="/qris-logo.svg" alt="QRIS" />
                 <span>QR Code Standar<br />Pembayaran Nasional</span>
+                <img className="klikqris-gpn-logo" src="/gpn-logo.svg" alt="GPN" />
               </div>
-              <span className="klikqris-gpn">GPN</span>
               <strong className="klikqris-merchant-name">AimeYummy</strong>
             </div>
             <span className="klikqris-qr-ribbon klikqris-qr-ribbon-top" aria-hidden="true" />
@@ -200,7 +205,12 @@ export default function KlikQrisPaymentCard({
               onClick={onCheck}
               disabled={checking || generating || isExpired}
             >
-              {checking ? 'Memeriksa pembayaran...' : 'Check Status'}
+              {checking ? (
+                <span className="klikqris-checking-content">
+                  <CheckSpinner />
+                  <span>Checking payment...</span>
+                </span>
+              ) : 'Check Payment'}
             </button>
             <button
               className="klikqris-download-button"
@@ -217,8 +227,8 @@ export default function KlikQrisPaymentCard({
           {checking ? (
             <div className="klikqris-status-loading" role="status" aria-live="polite">
               <div className="loading-spinner" />
-              <strong>Memeriksa status pembayaran...</strong>
-              <span>Mohon tunggu, halaman akan diperbarui otomatis.</span>
+              <strong>Checking payment...</strong>
+              <span>Mengecek status ke payment gateway. Halaman akan diperbarui bila pembayaran masih pending.</span>
             </div>
           ) : null}
 
