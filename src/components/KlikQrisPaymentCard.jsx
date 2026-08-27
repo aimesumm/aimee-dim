@@ -48,9 +48,6 @@ function formatCountdown(totalSeconds) {
   return `${String(minutes).padStart(2, '0')}:${String(remainder).padStart(2, '0')}`
 }
 
-function CheckSpinner() {
-  return <span className="klikqris-button-spinner" aria-hidden="true" />
-}
 
 async function downloadSource(source, fileName) {
   if (!source) return
@@ -205,12 +202,7 @@ export default function KlikQrisPaymentCard({
               onClick={onCheck}
               disabled={checking || generating || isExpired}
             >
-              {checking ? (
-                <span className="klikqris-checking-content">
-                  <CheckSpinner />
-                  <span>Checking payment...</span>
-                </span>
-              ) : 'Check Payment'}
+              Check Payment
             </button>
             <button
               className="klikqris-download-button"
@@ -224,13 +216,6 @@ export default function KlikQrisPaymentCard({
             </button>
           </div>
 
-          {checking ? (
-            <div className="klikqris-status-loading" role="status" aria-live="polite">
-              <div className="loading-spinner" />
-              <strong>Checking payment...</strong>
-              <span>Mengecek status ke payment gateway. Halaman akan diperbarui bila pembayaran masih pending.</span>
-            </div>
-          ) : null}
 
           {qrisError ? <div className="notice error klikqris-error">{qrisError}</div> : null}
         </>
