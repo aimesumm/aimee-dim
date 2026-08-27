@@ -1,6 +1,7 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { MENU_PLACEHOLDER_IMAGE } from '../data/menuItems'
+import { parsePrice } from '../data/siteConfig'
 import { fetchMenuItems } from '../lib/menuApi'
 
 const MenuContext = createContext(null)
@@ -10,7 +11,7 @@ function normalizeBackendItem(row) {
     id: row.id,
     name: row.name,
     category: row.category,
-    price: Number(row.price) || 0,
+    price: parsePrice(row.price),
     desc: row.description || '',
     badge: row.badge || '',
     image: row.imageUrl || MENU_PLACEHOLDER_IMAGE,
@@ -21,7 +22,7 @@ function normalizeBackendItem(row) {
       ? row.variants.map((variant, index) => ({
           key: `${row.id}-variant-${index}`,
           label: variant.label,
-          price: Number(variant.price) || 0,
+          price: parsePrice(variant.price),
         }))
       : [],
     sortOrder: Number(row.sortOrder) || 0,
